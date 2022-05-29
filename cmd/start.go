@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/khase/leaseplan-bot/config"
+	"github.com/khase/leaseplanabocarexporter/pkg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -257,7 +258,12 @@ func handleLoginCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *c
 		return nil
 	}
 
-	return setToken(command[1], message, bot, user)
+	token, err := pkg.GetToken(command[1], command[2])
+	if err != nil {
+		return err
+	}
+
+	return setToken(token, message, bot, user)
 }
 
 func handleSetTokenCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {

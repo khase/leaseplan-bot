@@ -146,7 +146,7 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 	if len(added) > 0 {
 		buf.WriteString("Added:\n")
 		for _, line := range added {
-			addMessageLine(buf, line, user.UserId, messages)
+			messages = addMessageLine(buf, line, user.UserId, messages)
 		}
 	}
 	if len(removed) > 0 {
@@ -155,7 +155,7 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 		}
 		buf.WriteString("Removed:\n")
 		for _, line := range removed {
-			addMessageLine(buf, line, user.UserId, messages)
+			messages = addMessageLine(buf, line, user.UserId, messages)
 		}
 	}
 
@@ -163,11 +163,13 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 	return messages, nil
 }
 
-func addMessageLine(buffer *bytes.Buffer, line string, userId int64, messages []tgbotapi.MessageConfig) {
+func addMessageLine(buffer *bytes.Buffer, line string, userId int64, messages []tgbotapi.MessageConfig) []tgbotapi.MessageConfig {
 	if buffer.Len()+len(line) > 3500 {
 		messages = append(messages, createMessageAndResetBuffer(buffer, userId))
 	}
 	buffer.WriteString(fmt.Sprintf("%s\n", line))
+
+	return messages
 }
 
 func createMessageAndResetBuffer(buffer *bytes.Buffer, userId int64) tgbotapi.MessageConfig {

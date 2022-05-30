@@ -192,7 +192,7 @@ func handleTestCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *co
 		if err != nil {
 			msg := tgbotapi.NewMessage(
 				message.Chat.ID,
-				fmt.Sprintf("Deine Formatierung schlägt leider fehl: %s", after, err))
+				fmt.Sprintf("Deine Formatierung schlägt leider fehl: %s", err))
 			msg.ReplyToMessageID = message.MessageID
 			bot.Send(msg)
 

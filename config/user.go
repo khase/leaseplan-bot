@@ -37,7 +37,7 @@ func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 	user.WatcherActive = false
 	user.WatcherRunning = false
 	user.WatcherDelay = 15
-	user.SummaryMessageTemplate = "{{ len(.Previous) }} -> {{ len(.Current) }} (+{{ len(.Added) }}, -{{ len(.Removed) }})"
+	user.SummaryMessageTemplate = "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})"
 	user.DetailMessageTemplate = "[{{ .OfferTypeName }}](https://www.leaseplan-abocar.de/offer-details/{{ .Ident }}/{{ .RentalObject.Ident }}) {{ .RentalObject.PowerHp }}PS ({{ .RentalObject.PriceProducer1 }}€)"
 	return user
 }

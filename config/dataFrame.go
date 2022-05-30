@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"math/rand"
 
@@ -149,6 +150,9 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 		}
 	}
 	if len(removed) > 0 {
+		if len(added) > 0 {
+			buf.WriteString("\n")
+		}
 		buf.WriteString("Removed:\n")
 		for _, line := range removed {
 			addMessageLine(buf, line, user.UserId, messages)
@@ -163,7 +167,7 @@ func addMessageLine(buffer *bytes.Buffer, line string, userId int64, messages []
 	if buffer.Len()+len(line) > 3500 {
 		messages = append(messages, createMessageAndResetBuffer(buffer, userId))
 	}
-	buffer.WriteString(line)
+	buffer.WriteString(fmt.Sprintf("%s\n", line))
 }
 
 func createMessageAndResetBuffer(buffer *bytes.Buffer, userId int64) tgbotapi.MessageConfig {

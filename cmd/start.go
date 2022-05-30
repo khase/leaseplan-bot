@@ -152,17 +152,19 @@ func handleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, userMap *con
 
 func handleCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User, userMap *config.UserMap) error {
 	command := strings.Split(message.Text, " ")
-	switch command[0] {
+	switch strings.ToLower(command[0]) {
 	case "/start":
 		return handleStartCommand(message, bot, userMap)
-	case "/setToken":
+	case "/settoken":
 		return handleSetTokenCommand(message, bot, user)
 	case "/login":
 		return handleLoginCommand(message, bot, user)
 	case "/connect":
 		return handleConnectCommand(message, bot, user)
-	case "/messageFormat":
-		return handleMessageFormatCommand(message, bot, user)
+	case "/summarymessageformat":
+		return handleSummaryMessageFormatCommand(message, bot, user)
+	case "/detailmessageformat":
+		return handleDetailMessageFormatCommand(message, bot, user)
 	case "/filter":
 		return handleFilterCommand(message, bot, user)
 	case "/pause":
@@ -234,8 +236,56 @@ func handleFilterCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *
 	return ErrCommandNotImplemented
 }
 
-func handleMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {
-	return ErrCommandNotImplemented
+func handleSummaryMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {
+	if user == nil {
+		return ErrCommandPermittedForUnknownUser
+	}
+
+	if _, after, found := strings.Cut(message.Text, "/summarymessageformat "); !found {
+		msg := tgbotapi.NewMessage(
+			message.Chat.ID,
+			"Bitte sende mir dein Format wie folgt\"/summarymessageformat <dein Format>\"")
+		msg.ReplyToMessageID = message.MessageID
+
+		bot.Send(msg)
+	} else {
+		user.SummaryMessageTemplate = after
+		user.Save()
+
+		msg := tgbotapi.NewMessage(
+			message.Chat.ID,
+			fmt.Sprintf("Ich habe dein Format \"%s\" übernommen", after))
+		msg.ReplyToMessageID = message.MessageID
+
+		bot.Send(msg)
+	}
+	return nil
+}
+
+func handleDetailMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {
+	if user == nil {
+		return ErrCommandPermittedForUnknownUser
+	}
+
+	if _, after, found := strings.Cut(message.Text, "/detailmessageformat "); !found {
+		msg := tgbotapi.NewMessage(
+			message.Chat.ID,
+			"Bitte sende mir dein Format wie folgt\"/detailmessageformat <dein Format>\"")
+		msg.ReplyToMessageID = message.MessageID
+
+		bot.Send(msg)
+	} else {
+		user.DetailMessageTemplate = after
+		user.Save()
+
+		msg := tgbotapi.NewMessage(
+			message.Chat.ID,
+			fmt.Sprintf("Ich habe dein Format \"%s\" übernommen", after))
+		msg.ReplyToMessageID = message.MessageID
+
+		bot.Send(msg)
+	}
+	return nil
 }
 
 func handleConnectCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {

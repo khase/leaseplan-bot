@@ -121,7 +121,10 @@ func (user *User) watch(bot *tgbotapi.BotAPI) {
 				}
 				buf.WriteString("Removed:\n")
 				for _, car := range frame.Removed {
-					carText, _ := fillTemplate(user.SummaryMessageTemplate, car)
+					carText, err := fillTemplate(user.DetailMessageTemplate, car)
+					if err != nil {
+						log.Printf("Watcher for %s(%d): got an error: %s", user.FriendlyName, user.UserId, err)
+					}
 					buf.WriteString(carText + "\n")
 
 					if buf.Len()+len(carText) > 3500 {

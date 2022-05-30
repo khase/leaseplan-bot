@@ -286,7 +286,21 @@ func handleSummaryMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.
 
 		bot.Send(msg)
 	} else {
+		oldTemplate := user.SummaryMessageTemplate
 		user.SummaryMessageTemplate = after
+
+		_, err := user.LastFrame.GetTestMessages(user, 0)
+		if err != nil {
+			msg := tgbotapi.NewMessage(
+				message.Chat.ID,
+				fmt.Sprintf("Dein Format \"%s\" kann leider nicht übernommen werden: %s", after, err))
+			msg.ReplyToMessageID = message.MessageID
+			bot.Send(msg)
+
+			user.SummaryMessageTemplate = oldTemplate
+			return nil
+		}
+
 		user.Save()
 
 		msg := tgbotapi.NewMessage(
@@ -312,7 +326,20 @@ func handleDetailMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.B
 
 		bot.Send(msg)
 	} else {
+		oldTemplate := user.DetailMessageTemplate
 		user.DetailMessageTemplate = after
+
+		_, err := user.LastFrame.GetTestMessages(user, 0)
+		if err != nil {
+			msg := tgbotapi.NewMessage(
+				message.Chat.ID,
+				fmt.Sprintf("Dein Format \"%s\" kann leider nicht übernommen werden: %s", after, err))
+			msg.ReplyToMessageID = message.MessageID
+			bot.Send(msg)
+
+			user.DetailMessageTemplate = oldTemplate
+			return nil
+		}
 		user.Save()
 
 		msg := tgbotapi.NewMessage(

@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"gopkg.in/yaml.v2"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type UserMap struct {
@@ -117,10 +119,10 @@ func (userMap *UserMap) fixUserBackReference() error {
 	return nil
 }
 
-func (userMap *UserMap) StartActiveWatchers() error {
+func (userMap *UserMap) StartActiveWatchers(bot *tgbotapi.BotAPI) error {
 	for _, user := range userMap.Users {
 		if user.WatcherActive {
-			user.StartWatcher()
+			user.StartWatcher(bot)
 		}
 	}
 

@@ -71,7 +71,6 @@ func startBot(apiToken string, userDataFile string, createNew bool, debug bool) 
 
 		userMap.SaveToFile(userDataFile)
 	}
-	userMap.StartActiveWatchers()
 
 	bot, err := tgbotapi.NewBotAPI(apiToken)
 	if err != nil {
@@ -80,6 +79,8 @@ func startBot(apiToken string, userDataFile string, createNew bool, debug bool) 
 
 	bot.Debug = debug
 	log.Printf("Authorized on account %s", bot.Self.UserName)
+
+	userMap.StartActiveWatchers(bot)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -212,7 +213,7 @@ func handleResumeCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *
 		return ErrCommandPermittedForUnknownUser
 	}
 
-	user.StartWatcher()
+	user.StartWatcher(bot)
 	user.Save()
 
 	return nil

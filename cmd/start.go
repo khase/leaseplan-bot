@@ -173,9 +173,46 @@ func handleCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config
 		return handleResumeCommand(message, bot, user)
 	case "/whoami":
 		return handleWhoamiCommand(message, bot, user)
+	case "/test":
+		return handleTestCommand(message, bot, user)
 	default:
 		return nil
 	}
+}
+
+func handleTestCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {
+	if user == nil {
+		return ErrCommandPermittedForUnknownUser
+	}
+
+	command := strings.Split(message.Text, " ")
+
+	if len(command) == 1 {
+		messages, err := user.LastFrame.GetTestMessages(user, 0)
+		if err != nil {
+			return err
+		}
+
+		for _, message := range messages {
+			bot.Send(message)
+		}
+	} else if len(command) == 2 {
+		testMessages, err := strconv.Atoi(command[1])
+		if err != nil {
+			return err
+		}
+
+		messages, err := user.LastFrame.GetTestMessages(user, testMessages)
+		if err != nil {
+			return err
+		}
+
+		for _, message := range messages {
+			bot.Send(message)
+		}
+	}
+
+	return nil
 }
 
 func handleWhoamiCommand(message *tgbotapi.Message, bot *tgbotapi.BotAPI, user *config.User) error {

@@ -289,7 +289,7 @@ func handleSummaryMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.
 		oldTemplate := user.SummaryMessageTemplate
 		user.SummaryMessageTemplate = after
 
-		_, err := user.LastFrame.GetTestMessages(user, 0)
+		_, err := user.LastFrame.GetTestMessages(user, 1)
 		if err != nil {
 			msg := tgbotapi.NewMessage(
 				message.Chat.ID,
@@ -329,7 +329,7 @@ func handleDetailMessageFormatCommand(message *tgbotapi.Message, bot *tgbotapi.B
 		oldTemplate := user.DetailMessageTemplate
 		user.DetailMessageTemplate = after
 
-		_, err := user.LastFrame.GetTestMessages(user, 0)
+		_, err := user.LastFrame.GetTestMessages(user, 1)
 		if err != nil {
 			msg := tgbotapi.NewMessage(
 				message.Chat.ID,

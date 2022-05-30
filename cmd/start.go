@@ -44,14 +44,14 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "token to be used for telegram auth")
-	rootCmd.PersistentFlags().StringVarP(&userDataFile, "userDataFile", "u", "./leaseplan-bot.userdata", "path to file containing all user data")
-	rootCmd.PersistentFlags().BoolVar(&createNew, "new", false, "if the userDataFile does not exist the bot will create a new database")
-	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "weather or not the bot should be started in debug mode")
-	viper.BindPFlag("telegramApiToken", rootCmd.PersistentFlags().Lookup("token"))
-	viper.BindPFlag("userDataFile", rootCmd.PersistentFlags().Lookup("userDataFile"))
-	viper.BindPFlag("new", rootCmd.PersistentFlags().Lookup("new"))
-	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	startCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "token to be used for telegram auth")
+	startCmd.PersistentFlags().StringVarP(&userDataFile, "userDataFile", "u", "./leaseplan-bot.userdata", "path to file containing all user data")
+	startCmd.PersistentFlags().BoolVar(&createNew, "new", false, "if the userDataFile does not exist the bot will create a new database")
+	startCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "weather or not the bot should be started in debug mode")
+	viper.BindPFlag("telegramApiToken", startCmd.PersistentFlags().Lookup("token"))
+	viper.BindPFlag("userDataFile", startCmd.PersistentFlags().Lookup("userDataFile"))
+	viper.BindPFlag("new", startCmd.PersistentFlags().Lookup("new"))
+	viper.BindPFlag("debug", startCmd.PersistentFlags().Lookup("debug"))
 }
 
 func startBot(apiToken string, userDataFile string, createNew bool, debug bool) error {

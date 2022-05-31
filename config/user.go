@@ -82,24 +82,26 @@ func (user *User) watch(bot *tgbotapi.BotAPI) {
 			log.Printf("Watcher for %s(%d): got an error: %s", user.FriendlyName, user.UserId, err)
 		}
 
-		log.Printf("Watcher for %s(%d): got %d car items", user.FriendlyName, user.UserId, len(currentCarList))
-		frame := NewDataFrame(lastCarList, currentCarList)
-		log.Printf("Watcher for %s(%d): found differences: +%d, -%d", user.FriendlyName, user.UserId, len(frame.Added), len(frame.Removed))
+		if err == nil {
+			log.Printf("Watcher for %s(%d): got %d car items", user.FriendlyName, user.UserId, len(currentCarList))
+			frame := NewDataFrame(lastCarList, currentCarList)
+			log.Printf("Watcher for %s(%d): found differences: +%d, -%d", user.FriendlyName, user.UserId, len(frame.Added), len(frame.Removed))
 
-		if err == nil && !isFirstRun && frame.HasChanges {
-			messages, err := frame.GetMessages(user)
-			if err != nil {
-				log.Printf("Watcher for %s(%d): got an error: %s", user.FriendlyName, user.UserId, err)
+			if !isFirstRun && frame.HasChanges {
+				messages, err := frame.GetMessages(user)
+				if err != nil {
+					log.Printf("Watcher for %s(%d): got an error: %s", user.FriendlyName, user.UserId, err)
+				}
+
+				for _, message := range messages {
+					bot.Send(message)
+				}
 			}
 
-			for _, message := range messages {
-				bot.Send(message)
-			}
+			user.LastFrame = frame
+			lastCarList = currentCarList
+			isFirstRun = false
 		}
-
-		user.LastFrame = frame
-		lastCarList = currentCarList
-		isFirstRun = false
 
 		log.Printf("Watcher for %s(%d): sleeps for %d minutes", user.FriendlyName, user.UserId, user.WatcherDelay)
 		for i := user.WatcherDelay; i > 0; i-- {

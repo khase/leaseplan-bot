@@ -86,7 +86,7 @@ func (user *User) watch(bot *tgbotapi.BotAPI) {
 		frame := NewDataFrame(lastCarList, currentCarList)
 		log.Printf("Watcher for %s(%d): found differences: +%d, -%d", user.FriendlyName, user.UserId, len(frame.Added), len(frame.Removed))
 
-		if !isFirstRun && frame.HasChanges {
+		if err == nil && !isFirstRun && frame.HasChanges {
 			messages, err := frame.GetMessages(user)
 			if err != nil {
 				log.Printf("Watcher for %s(%d): got an error: %s", user.FriendlyName, user.UserId, err)

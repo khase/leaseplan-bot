@@ -23,8 +23,19 @@ type DataFrame struct {
 	HasChanges bool `yaml:"HasChanges,omitempty"`
 }
 
-func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
+func NewEmptyDataFrame() *DataFrame {
 	frame := new(DataFrame)
+	frame.Previous = []dto.Item{}
+	frame.Current = []dto.Item{}
+	frame.Added = []dto.Item{}
+	frame.Removed = []dto.Item{}
+	frame.HasChanges = false
+
+	return frame
+}
+
+func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
+	frame := NewEmptyDataFrame()
 	frame.Previous = previous
 	frame.Current = current
 
@@ -39,7 +50,7 @@ func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
 }
 
 func LoadDataFrameFile(path string) (*DataFrame, error) {
-	frame := new(DataFrame)
+	frame := NewEmptyDataFrame()
 
 	strData, err := os.ReadFile(path)
 	if err != nil {

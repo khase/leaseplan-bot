@@ -56,12 +56,12 @@ func (user *User) Save() {
 
 func (user *User) LoadUserCache() {
 	frame, err := LoadDataFrameFile(fmt.Sprintf("%s/%d.lastframe", cacheBasePath, user.UserId))
+	user.LastFrame = frame
 	if err != nil {
 		fmt.Printf("Failed loading usercache for %s: %s\n", user.FriendlyName, err)
 	} else {
 		fmt.Printf("Loaded usercache for %s: %d -> %d (+%d, -%d)\n", user.FriendlyName, len(user.LastFrame.Previous), len(user.LastFrame.Current), len(user.LastFrame.Added), len(user.LastFrame.Removed))
 	}
-	user.LastFrame = frame
 }
 
 func (user *User) SaveUserCache() {

@@ -43,16 +43,16 @@ func LoadDataFrameFile(path string) (*DataFrame, error) {
 
 	strData, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return frame, err
 	}
 
 	err = yaml.Unmarshal(strData, frame)
 	if err != nil {
-		return nil, err
+		return frame, err
 	}
 
 	if err != nil {
-		return nil, err
+		return frame, err
 	}
 
 	return frame, nil

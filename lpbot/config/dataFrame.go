@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"html/template"
 	"math/rand"
+	"os"
 
 	"github.com/Masterminds/sprig"
 	"github.com/khase/leaseplanabocarexporter/dto"
+	"gopkg.in/yaml.v2"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -18,7 +20,7 @@ type DataFrame struct {
 	Added    []dto.Item `yaml:"Added,omitempty"`
 	Removed  []dto.Item `yaml:"Removed,omitempty"`
 
-	HasChanges bool `yaml:"Removed,omitempty"`
+	HasChanges bool `yaml:"HasChanges,omitempty"`
 }
 
 func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
@@ -34,6 +36,26 @@ func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
 	frame.HasChanges = len(added) > 0 || len(removed) > 0
 
 	return frame
+}
+
+func LoadDataFrameFile(path string) (*DataFrame, error) {
+	frame := new(DataFrame)
+
+	strData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(strData, frame)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return frame, nil
 }
 
 func getItemDiff(previous []dto.Item, current []dto.Item) (added []dto.Item, removed []dto.Item) {
@@ -63,6 +85,20 @@ func getItemDiff(previous []dto.Item, current []dto.Item) (added []dto.Item, rem
 	}
 
 	return added, removed
+}
+
+func (dataFrame *DataFrame) SaveToFile(path string) error {
+	data, err := yaml.Marshal(dataFrame)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, data, 0600)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (dataFrame *DataFrame) GetMessages(user *User) ([]tgbotapi.MessageConfig, error) {

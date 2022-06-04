@@ -3,6 +3,7 @@ module github.com/khase/leaseplan-bot
 go 1.18
 
 require (
+	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/khase/leaseplanabocarexporter v1.0.2-0.20220528221454-82e57a66a520
 	github.com/spf13/cobra v1.4.0
@@ -13,7 +14,6 @@ require (
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

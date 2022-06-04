@@ -59,9 +59,9 @@ func (user *User) LoadUserCache() {
 	if err != nil {
 		fmt.Printf("Failed loading usercache for %s: %s\n", user.FriendlyName, err)
 	} else {
-		user.LastFrame = frame
 		fmt.Printf("Loaded usercache for %s: %d -> %d (+%d, -%d)\n", user.FriendlyName, len(user.LastFrame.Previous), len(user.LastFrame.Current), len(user.LastFrame.Added), len(user.LastFrame.Removed))
 	}
+	user.LastFrame = frame
 }
 
 func (user *User) SaveUserCache() {

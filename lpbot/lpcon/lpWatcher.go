@@ -29,10 +29,10 @@ func (watcher *LpWatcher) Stop() {
 }
 
 func (watcher *LpWatcher) Watch(itemChannel chan []dto.Item) {
-	log.Printf("Leaseplanwatcher for %s: starting\n", watcher.user.FriendlyName)
+	log.Printf("Leaseplanwatcher for %s(%d): starting\n", watcher.user.FriendlyName, watcher.user.UserId)
 	watcher.isActive = true
 	defer func() {
-		log.Printf("Leaseplanwatcher for %s: shutdown\n", watcher.user.FriendlyName)
+		log.Printf("Leaseplanwatcher for %s(%d): shutdown\n", watcher.user.FriendlyName, watcher.user.UserId)
 		watcher.isActive = false
 		close(itemChannel)
 	}()
@@ -40,12 +40,12 @@ func (watcher *LpWatcher) Watch(itemChannel chan []dto.Item) {
 	for watcher.isActive {
 		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 50)
 		if err != nil {
-			log.Printf("Leaseplanwatcher for %s: could not get car list %s\n", watcher.user.FriendlyName, err)
+			log.Printf("Leaseplanwatcher for %s(%d): could not get car list %s\n", watcher.user.FriendlyName, watcher.user.UserId, err)
 		}
 
 		itemChannel <- carList
 
-		log.Printf("Leaseplanwatcher for %s: sleeping for %d minutes\n", watcher.user.FriendlyName, watcher.user.WatcherDelay)
+		log.Printf("Leaseplanwatcher for %s(%d): sleeping for %d minutes\n", watcher.user.FriendlyName, watcher.user.UserId, watcher.user.WatcherDelay)
 		for minutesToSleep := watcher.user.WatcherDelay; minutesToSleep > 0; minutesToSleep-- {
 			for secondsToSleep := 60; secondsToSleep > 0; secondsToSleep -= 5 {
 				if !watcher.isActive {

@@ -1,3 +1,4 @@
 *.userdata
 *.init
 cache/
+__debug_bin

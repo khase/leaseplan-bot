@@ -1,14 +1,9 @@
 package cmd
 
 import (
-	"errors"
-	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"time"
 
-	"github.com/khase/leaseplan-bot/lpbot/tgcon"
+	"github.com/khase/leaseplan-bot/lpbot"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -31,8 +26,6 @@ var (
 			}
 		},
 	}
-
-	ErrExternalInterrupt = errors.New("interrupted from external signal")
 )
 
 func init() {
@@ -47,37 +40,5 @@ func init() {
 }
 
 func startBot(apiToken string, userDataFile string, createNew bool, debug bool) error {
-
-	tgBot := tgcon.NewTgConnector(apiToken, debug, userDataFile, createNew)
-	err := tgBot.Init()
-
-	if errors.Is(err, tgcon.ErrTelegramTokenUnser) {
-		return errors.New("No bot token set. Use flag `-t` to provide a telegram bot api token")
-	} else if errors.Is(err, tgcon.ErrUserDataFileNotExistant) {
-		log.Printf("User userDateFile \"%s\" does not exist. To create a new one start the bot with the \"--new\" flag", userDataFile)
-	}
-
-	commandChannel := make(chan error)
-
-	go tgBot.ReceiveMessages()
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for range c {
-			tgBot.Shutdown()
-			commandChannel <- ErrExternalInterrupt
-		}
-	}()
-
-	for {
-		for command := range commandChannel {
-			if errors.Is(command, ErrExternalInterrupt) {
-				fmt.Printf("\nReceived external interrupt.\n")
-				fmt.Printf("Shutting down bot...\n")
-				time.Sleep(5 * time.Second)
-				return nil
-			}
-		}
-	}
+	return lpbot.StartBot(apiToken, debug, userDataFile, createNew)
 }

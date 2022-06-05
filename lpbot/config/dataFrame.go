@@ -112,16 +112,16 @@ func (dataFrame *DataFrame) SaveToFile(path string) error {
 	return nil
 }
 
-func (dataFrame *DataFrame) GetMessages(user *User) ([]tgbotapi.MessageConfig, error) {
+func (dataFrame *DataFrame) GetMessages(user *User) ([]tgbotapi.Chattable, error) {
 	return dataFrame.getMessagesInternal(user, 0)
 }
 
-func (dataFrame *DataFrame) GetTestMessages(user *User, testLength int) ([]tgbotapi.MessageConfig, error) {
+func (dataFrame *DataFrame) GetTestMessages(user *User, testLength int) ([]tgbotapi.Chattable, error) {
 	return dataFrame.getMessagesInternal(user, testLength)
 }
 
-func (dataFrame *DataFrame) getMessagesInternal(user *User, testLength int) ([]tgbotapi.MessageConfig, error) {
-	messages := make([]tgbotapi.MessageConfig, 1)
+func (dataFrame *DataFrame) getMessagesInternal(user *User, testLength int) ([]tgbotapi.Chattable, error) {
+	messages := make([]tgbotapi.Chattable, 0)
 	summaryMessage, err := dataFrame.getSummaryMessage(user)
 	if err != nil {
 		return nil, err
@@ -132,12 +132,14 @@ func (dataFrame *DataFrame) getMessagesInternal(user *User, testLength int) ([]t
 	if err != nil {
 		return nil, err
 	}
-	messages = append(messages, detailMessages...)
+	for _, msg := range detailMessages {
+		messages = append(messages, msg)
+	}
 
 	return messages, nil
 }
 
-func (dataFrame *DataFrame) getSummaryMessage(user *User) (tgbotapi.MessageConfig, error) {
+func (dataFrame *DataFrame) getSummaryMessage(user *User) (tgbotapi.Chattable, error) {
 	summary, err := dataFrame.getSummaryText(user.SummaryMessageTemplate)
 	if err != nil {
 		return tgbotapi.MessageConfig{}, err
@@ -156,7 +158,7 @@ func (dataFrame *DataFrame) getSummaryText(template string) (string, error) {
 	return summaryString, nil
 }
 
-func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgbotapi.MessageConfig, error) {
+func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgbotapi.Chattable, error) {
 	added, err := getCarsDetailsTexts(dataFrame.Added, user.DetailMessageTemplate)
 	if err != nil {
 		return nil, err
@@ -187,7 +189,7 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 		}
 	}
 
-	messages := make([]tgbotapi.MessageConfig, 0)
+	messages := make([]tgbotapi.Chattable, 0)
 	buf := new(bytes.Buffer)
 
 	if len(added) > 0 {
@@ -206,11 +208,13 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 		}
 	}
 
-	messages = append(messages, createMessageAndResetBuffer(buf, user.UserId))
+	if buf.Len() > 0 {
+		messages = append(messages, createMessageAndResetBuffer(buf, user.UserId))
+	}
 	return messages, nil
 }
 
-func addMessageLine(buffer *bytes.Buffer, line string, userId int64, messages []tgbotapi.MessageConfig) []tgbotapi.MessageConfig {
+func addMessageLine(buffer *bytes.Buffer, line string, userId int64, messages []tgbotapi.Chattable) []tgbotapi.Chattable {
 	if buffer.Len()+len(line) > 3500 {
 		messages = append(messages, createMessageAndResetBuffer(buffer, userId))
 	}

@@ -11,7 +11,7 @@ import (
 var (
 	StartCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "start",
-		ShortDescription: "",
+		ShortDescription: "erstellt einen internen Benutzer",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleStartCommand(message, UserMap)
@@ -19,7 +19,7 @@ var (
 	}
 	ResumeCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "resume",
-		ShortDescription: "",
+		ShortDescription: "aktiviert deine update Nachrichten",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleResumeCommand(message, UserMap.Users[message.From.ID])
@@ -27,7 +27,7 @@ var (
 	}
 	PauseCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "pause",
-		ShortDescription: "",
+		ShortDescription: "pausiert deine update Nachrichten",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handlePauseCommand(message, UserMap.Users[message.From.ID])
@@ -35,7 +35,7 @@ var (
 	}
 	WhoamiCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "whoami",
-		ShortDescription: "",
+		ShortDescription: "gibt alle über dich bekannten Infos zurück",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleWhoamiCommand(message, UserMap.Users[message.From.ID])

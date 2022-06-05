@@ -9,7 +9,7 @@ import (
 var (
 	FilterCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "filter",
-		ShortDescription: "",
+		ShortDescription: "setzt einen Filter für Benachrichtigungen",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleFilterCommand(message, UserMap.Users[message.From.ID])

@@ -1,12 +1,14 @@
 package tgcon
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
 	"math"
 	"math/rand"
 	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -138,10 +140,19 @@ func (bot *TgConnector) handleMessage(message *tgbotapi.Message) error {
 	}
 }
 
+func (bot *TgConnector) GetCommandDescriptions() string {
+	buf := new(bytes.Buffer)
+	for _, cmd := range bot.commands {
+		buf.WriteString(fmt.Sprintf("%s - %s\n", strings.ToLower(cmd.CommandTrigger), cmd.ShortDescription))
+	}
+
+	return buf.String()
+}
+
 func (bot *TgConnector) handleCommand(message *tgbotapi.Message) error {
 	log.Printf("Handle command Message from %s: %s", message.From.FirstName, message.Text)
 	for _, cmd := range bot.commands {
-		if cmd.CommandTrigger == message.Command() {
+		if strings.ToLower(cmd.CommandTrigger) == strings.ToLower(message.Command()) {
 			// log.Printf("Executing command: %s", cmd.CommandTrigger)
 			resultMessages, err := cmd.Execute(message)
 			// data, err := yaml.Marshal(resultMessages)

@@ -3,6 +3,7 @@ package lpbot
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -45,6 +46,8 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool) err
 	tgBot.AddCommand(DetailFormatCmd)
 	tgBot.AddCommand(TestFormatCmd)
 	tgBot.AddCommand(FilterCmd)
+
+	log.Printf("Bot Command Descriptions:\n%s", tgBot.GetCommandDescriptions())
 	err = tgBot.Init()
 
 	if errors.Is(err, tgcon.ErrTelegramTokenUnser) {

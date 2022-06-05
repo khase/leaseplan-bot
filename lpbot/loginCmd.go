@@ -12,7 +12,7 @@ import (
 var (
 	LoginCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "login",
-		ShortDescription: "",
+		ShortDescription: "loggt dich bei leaseplan ein email/password",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleLoginCommand(message, UserMap.Users[message.From.ID])
@@ -20,7 +20,7 @@ var (
 	}
 	TokenCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "settoken",
-		ShortDescription: "",
+		ShortDescription: "loggt dich bei leaseplan ein token",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleSetTokenCommand(message, UserMap.Users[message.From.ID])
@@ -28,7 +28,7 @@ var (
 	}
 	ConnectCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "connect",
-		ShortDescription: "",
+		ShortDescription: "verwende den lp-Account eines Kollegen",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleConnectCommand(message, UserMap.Users[message.From.ID])

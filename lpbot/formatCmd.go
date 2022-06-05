@@ -13,7 +13,7 @@ import (
 var (
 	SummaryFormatCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "setsummarymessageformat",
-		ShortDescription: "",
+		ShortDescription: "setzt deine persönliche summaryMessage",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleSummaryMessageFormatCommand(message, UserMap.Users[message.From.ID])
@@ -21,7 +21,7 @@ var (
 	}
 	DetailFormatCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "setdetailmessageformat",
-		ShortDescription: "",
+		ShortDescription: "setzt deine persönliche detailMessage",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleDetailMessageFormatCommand(message, UserMap.Users[message.From.ID])
@@ -29,7 +29,7 @@ var (
 	}
 	TestFormatCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "test",
-		ShortDescription: "",
+		ShortDescription: "gibt die aktuellen Daten als Testnachricht zurück",
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handleTestCommand(message, UserMap.Users[message.From.ID])

@@ -1,0 +1,37 @@
+Previous:
+- readonlyproperties:
+    hasfollowupbooking: false
+    state: Online
+  rentalobject:
+    readonlyproperties:
+      hasfollowupbooking: false
+    objgroup: PKW
+    carlabel: MG
+    carmodellspec: EV 51kWh LUX
+    powerhp: 177
+    powerkw: 130
+    uniquenumber: 57236
+    carused: false
+    priceproducer1: 37189
+    priceproducer1net: 31251.26
+    ident: CCUNZEZE2022052522095673CB8DCB
+  ident: CCUNZEZE202205252209572081C3F9
+Current:
+- readonlyproperties:
+    hasfollowupbooking: false
+    state: Online
+  rentalobject:
+    readonlyproperties:
+      hasfollowupbooking: false
+    objgroup: PKW
+    carlabel: MG
+    carmodellspec: EV 51kWh LUX
+    powerhp: 177
+    powerkw: 130
+    uniquenumber: 57236
+    carused: false
+    priceproducer1: 37189
+    priceproducer1net: 31251.26
+    ident: CCUNZEZE2022052522095673CB8DCB
+  ident: CCUNZEZE202205252209572081C3F9
+HasChanges: false

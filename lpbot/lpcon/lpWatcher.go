@@ -38,7 +38,7 @@ func (watcher *LpWatcher) Watch(itemChannel chan []dto.Item) {
 	}()
 
 	for watcher.isActive {
-		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 50)
+		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 1000)
 		if err != nil {
 			log.Printf("Leaseplanwatcher for %s(%d): could not get car list %s\n", watcher.user.FriendlyName, watcher.user.UserId, err)
 		}

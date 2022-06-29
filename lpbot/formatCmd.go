@@ -83,36 +83,28 @@ func handleSummaryMessageFormatCommand(message *tgbotapi.Message, user *config.U
 		return nil, tgcon.ErrCommandPermittedForUnknownUser
 	}
 
-	if _, after, found := strings.Cut(message.Text, "/summarymessageformat "); !found {
+	oldTemplate := user.SummaryMessageTemplate
+	user.SummaryMessageTemplate = message.CommandArguments()
+
+	_, err := user.LastFrame.GetTestMessages(user, 1)
+	if err != nil {
+		fmt.Printf("Could not evaluate template \"%s\": %s", user.SummaryMessageTemplate, err)
 		msg := tgbotapi.NewMessage(
 			message.Chat.ID,
-			"Bitte sende mir dein Format wie folgt\"/summarymessageformat <dein Format>\"")
+			fmt.Sprintf("Dein Format \"%s\" kann leider nicht übernommen werden: %s", user.SummaryMessageTemplate, err))
 		msg.ReplyToMessageID = message.MessageID
 
-		return []tgbotapi.Chattable{msg}, nil
-	} else {
-		oldTemplate := user.SummaryMessageTemplate
-		user.SummaryMessageTemplate = after
-
-		_, err := user.LastFrame.GetTestMessages(user, 1)
-		if err != nil {
-			msg := tgbotapi.NewMessage(
-				message.Chat.ID,
-				fmt.Sprintf("Dein Format \"%s\" kann leider nicht übernommen werden: %s", after, err))
-			msg.ReplyToMessageID = message.MessageID
-
-			user.SummaryMessageTemplate = oldTemplate
-			return []tgbotapi.Chattable{msg}, nil
-		}
-		user.Save()
-
-		msg := tgbotapi.NewMessage(
-			message.Chat.ID,
-			fmt.Sprintf("Ich habe dein Format \"%s\" übernommen", after))
-		msg.ReplyToMessageID = message.MessageID
-
+		user.SummaryMessageTemplate = oldTemplate
 		return []tgbotapi.Chattable{msg}, nil
 	}
+	user.Save()
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		fmt.Sprintf("Ich habe dein Format \"%s\" übernommen", user.SummaryMessageTemplate))
+	msg.ReplyToMessageID = message.MessageID
+
+	return []tgbotapi.Chattable{msg}, nil
 }
 
 func handleDetailMessageFormatCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
@@ -120,34 +112,26 @@ func handleDetailMessageFormatCommand(message *tgbotapi.Message, user *config.Us
 		return nil, tgcon.ErrCommandPermittedForUnknownUser
 	}
 
-	if _, after, found := strings.Cut(message.Text, "/detailmessageformat "); !found {
+	oldTemplate := user.DetailMessageTemplate
+	user.DetailMessageTemplate = message.CommandArguments()
+
+	_, err := user.LastFrame.GetTestMessages(user, 1)
+	if err != nil {
+		fmt.Printf("Could not evaluate template \"%s\": %s", user.DetailMessageTemplate, err)
 		msg := tgbotapi.NewMessage(
 			message.Chat.ID,
-			"Bitte sende mir dein Format wie folgt\"/detailmessageformat <dein Format>\"")
+			fmt.Sprintf("Dein Format \"%s\" kann leider nicht übernommen werden: %s", user.DetailMessageTemplate, err))
 		msg.ReplyToMessageID = message.MessageID
 
-		return []tgbotapi.Chattable{msg}, nil
-	} else {
-		oldTemplate := user.DetailMessageTemplate
-		user.DetailMessageTemplate = after
-
-		_, err := user.LastFrame.GetTestMessages(user, 1)
-		if err != nil {
-			msg := tgbotapi.NewMessage(
-				message.Chat.ID,
-				fmt.Sprintf("Dein Format \"%s\" kann leider nicht übernommen werden: %s", after, err))
-			msg.ReplyToMessageID = message.MessageID
-
-			user.DetailMessageTemplate = oldTemplate
-			return []tgbotapi.Chattable{msg}, nil
-		}
-		user.Save()
-
-		msg := tgbotapi.NewMessage(
-			message.Chat.ID,
-			fmt.Sprintf("Ich habe dein Format \"%s\" übernommen", after))
-		msg.ReplyToMessageID = message.MessageID
-
+		user.DetailMessageTemplate = oldTemplate
 		return []tgbotapi.Chattable{msg}, nil
 	}
+	user.Save()
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		fmt.Sprintf("Ich habe dein Format \"%s\" übernommen", user.DetailMessageTemplate))
+	msg.ReplyToMessageID = message.MessageID
+
+	return []tgbotapi.Chattable{msg}, nil
 }

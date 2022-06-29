@@ -141,6 +141,8 @@ github.com/khase/leaseplanabocarexporter v1.0.1 h1:3sIq/Soo/FbCmpPAJyjIF6qzg9Cul
 github.com/khase/leaseplanabocarexporter v1.0.1/go.mod h1:Ddubp10S//uqMp/x2VxwSjKqiGUtwwdZBzbP32K8DM4=
 github.com/khase/leaseplanabocarexporter v1.0.2-0.20220528221454-82e57a66a520 h1:AS4yKIKOkJEXzfnmj7E6gbXgzSXXCtnS50pJUGeeGDM=
 github.com/khase/leaseplanabocarexporter v1.0.2-0.20220528221454-82e57a66a520/go.mod h1:Ddubp10S//uqMp/x2VxwSjKqiGUtwwdZBzbP32K8DM4=
+github.com/khase/leaseplanabocarexporter v1.0.2-0.20220627170859-c5ddbe7c6935 h1:JvAUdDz6TPJf5Vnqw+DjP7BUDfL8etshw4srvMQjW9E=
+github.com/khase/leaseplanabocarexporter v1.0.2-0.20220627170859-c5ddbe7c6935/go.mod h1:Ddubp10S//uqMp/x2VxwSjKqiGUtwwdZBzbP32K8DM4=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

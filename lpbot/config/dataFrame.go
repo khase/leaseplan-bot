@@ -254,7 +254,7 @@ func getCarDetails(car *dto.Item, template string) (string, error) {
 }
 
 func fillTemplate(templateString string, input interface{}) (string, error) {
-	tmpl, err := template.New("Template").Funcs(sprig.FuncMap()).Parse(templateString)
+	tmpl, err := template.New("Template").Funcs(sprig.FuncMap()).Funcs(template.FuncMap{"netPrice": netPrice}).Parse(templateString)
 	if err != nil {
 		return "", err
 	}
@@ -267,4 +267,19 @@ func fillTemplate(templateString string, input interface{}) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+func netPrice(car dto.Item) float64 {
+	taxRate := 0.01 // -> Diesel / Benzin
+	if car.RentalObject.KindOfFuel == "Plug-in-Hybrid" {
+		taxRate = 0.005
+	}
+	if car.RentalObject.KindOfFuel == "Elektro" {
+		if car.RentalObject.PriceProducer1 <= 60000 {
+			taxRate = 0.0025
+		} else {
+			taxRate = 0.005
+		}
+	}
+	return car.RentalObject.PriceProducer1 * taxRate
 }

@@ -28,6 +28,14 @@ var (
 		[]string{
 			"username",
 		})
+	requestTime = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "lpcon_request_time",
+			Help: "The duration in ms the leaseplan request took to finish",
+		},
+		[]string{
+			"username",
+		})
 )
 
 type LpWatcher struct {
@@ -60,7 +68,10 @@ func (watcher *LpWatcher) Watch(itemChannel chan []dto.Item) {
 
 	for watcher.isActive {
 		totalRequestsStarted.WithLabelValues(watcher.user.FriendlyName).Inc()
+		requestStart := time.Now()
 		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 1000)
+		requestDuration := time.Since(requestStart)
+		requestTime.WithLabelValues(watcher.user.FriendlyName).Set(float64(requestDuration.Milliseconds()))
 		if err != nil {
 			totalRequestErrors.WithLabelValues(watcher.user.FriendlyName).Inc()
 			log.Printf("Leaseplanwatcher for %s(%d): could not get car list %s\n", watcher.user.FriendlyName, watcher.user.UserId, err)

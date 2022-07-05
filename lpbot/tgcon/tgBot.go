@@ -11,9 +11,45 @@ import (
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
+	totalMessagesRecieved = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tgcon_total_messages_recieved",
+			Help: "The total number of messages recieved",
+		},
+		[]string{
+			"username",
+		})
+	totalCommandMessagesRecieved = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tgcon_total_command_messages_recieved",
+			Help: "The total number of command messages recieved",
+		},
+		[]string{
+			"username",
+			"command",
+		})
+	totalNonCommandMessagesRecieved = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tgcon_total_noncommand_messages_recieved",
+			Help: "The total number of non command messages recieved",
+		},
+		[]string{
+			"username",
+		})
+	totalErrorsOccured = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tgcon_total_errors_occured",
+			Help: "The total number of errors occured",
+		},
+		[]string{
+			"username",
+		})
+
 	ErrTelegramTokenUnser = errors.New("no telegram token has been provided")
 
 	ErrUnknown                        = errors.New("internal error")
@@ -87,7 +123,11 @@ func (bot *TgConnector) ReceiveMessages() {
 				return
 			}
 			if update.Message != nil { // If we got a message
-				bot.handleMessage(update.Message)
+				if err := bot.handleMessage(update.Message); err != nil {
+					totalNonCommandMessagesRecieved.WithLabelValues(update.Message.From.UserName).Inc()
+
+					fmt.Printf("Error occured for user \"%s\": %s", update.Message.From.UserName, err)
+				}
 			}
 		}
 	}
@@ -98,8 +138,10 @@ func (bot *TgConnector) Shutdown() {
 }
 
 func (bot *TgConnector) handleMessage(message *tgbotapi.Message) error {
+	totalMessagesRecieved.WithLabelValues(message.From.FirstName).Inc()
 
 	if !message.IsCommand() {
+		totalNonCommandMessagesRecieved.WithLabelValues(message.From.FirstName).Inc()
 		log.Printf("Got non command Message from %s: %s", message.From.FirstName, message.Text)
 
 		msg := tgbotapi.NewMessage(message.Chat.ID, strconv.FormatInt(int64(math.Pow(2, 16))+rand.Int63n(int64(math.Pow(2, 32))), 2))
@@ -153,6 +195,7 @@ func (bot *TgConnector) handleCommand(message *tgbotapi.Message) error {
 	log.Printf("Handle command Message from %s: %s", message.From.FirstName, message.Text)
 	for _, cmd := range bot.commands {
 		if strings.ToLower(cmd.CommandTrigger) == strings.ToLower(message.Command()) {
+			totalCommandMessagesRecieved.WithLabelValues(message.From.FirstName, cmd.CommandTrigger).Inc()
 			// log.Printf("Executing command: %s", cmd.CommandTrigger)
 			resultMessages, err := cmd.Execute(message)
 			// data, err := yaml.Marshal(resultMessages)

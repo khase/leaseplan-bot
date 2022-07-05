@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -11,6 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/khase/leaseplan-bot/lpbot/config"
 	"github.com/khase/leaseplan-bot/lpbot/tgcon"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -21,6 +23,9 @@ var (
 )
 
 func StartBot(token string, debug bool, userDataFile string, createNew bool) error {
+	http.Handle("/metrics", promhttp.Handler())
+	go http.ListenAndServe(":2112", nil)
+
 	userMap, err := config.LoadUserMap(userDataFile)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {

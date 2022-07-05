@@ -7,6 +7,27 @@ import (
 	"github.com/khase/leaseplan-bot/lpbot/config"
 	"github.com/khase/leaseplanabocarexporter/dto"
 	"github.com/khase/leaseplanabocarexporter/pkg"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	totalRequestsStarted = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "lpcon_total_requests",
+			Help: "The total number of requests sent to leaseplan",
+		},
+		[]string{
+			"username",
+		})
+	totalRequestErrors = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "lpcon_total_request_errors",
+			Help: "The total number of requests returned an error",
+		},
+		[]string{
+			"username",
+		})
 )
 
 type LpWatcher struct {
@@ -38,9 +59,12 @@ func (watcher *LpWatcher) Watch(itemChannel chan []dto.Item) {
 	}()
 
 	for watcher.isActive {
+		totalRequestsStarted.WithLabelValues(watcher.user.FriendlyName).Inc()
 		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 1000)
 		if err != nil {
+			totalRequestErrors.WithLabelValues(watcher.user.FriendlyName).Inc()
 			log.Printf("Leaseplanwatcher for %s(%d): could not get car list %s\n", watcher.user.FriendlyName, watcher.user.UserId, err)
+			continue
 		}
 
 		itemChannel <- carList

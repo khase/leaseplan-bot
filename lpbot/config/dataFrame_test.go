@@ -75,6 +75,7 @@ func TestTaxNetto(t *testing.T) {
 				KindOfFuel:     "Benzin",
 				PriceProducer1: 90000,
 			},
+			SalaryWaiver: 500,
 		},
 		{
 			RentalObject: dto.RentalObject{
@@ -82,6 +83,7 @@ func TestTaxNetto(t *testing.T) {
 				KindOfFuel:     "Diesel",
 				PriceProducer1: 90000,
 			},
+			SalaryWaiver: 500,
 		},
 		{
 			RentalObject: dto.RentalObject{
@@ -89,6 +91,7 @@ func TestTaxNetto(t *testing.T) {
 				KindOfFuel:     "Plug-in-Hybrid",
 				PriceProducer1: 90000,
 			},
+			SalaryWaiver: 500,
 		},
 		{
 			RentalObject: dto.RentalObject{
@@ -96,6 +99,7 @@ func TestTaxNetto(t *testing.T) {
 				KindOfFuel:     "Elektro",
 				PriceProducer1: 90000,
 			},
+			SalaryWaiver: 500,
 		},
 		{
 			RentalObject: dto.RentalObject{
@@ -103,6 +107,7 @@ func TestTaxNetto(t *testing.T) {
 				KindOfFuel:     "Elektro",
 				PriceProducer1: 60000,
 			},
+			SalaryWaiver: 500,
 		},
 		{
 			RentalObject: dto.RentalObject{
@@ -110,6 +115,7 @@ func TestTaxNetto(t *testing.T) {
 				KindOfFuel:     "Elektro",
 				PriceProducer1: 60001,
 			},
+			SalaryWaiver: 500,
 		},
 	}
 	frame := config.NewDataFrame(prev, cur)
@@ -117,7 +123,7 @@ func TestTaxNetto(t *testing.T) {
 	messages, err := frame.GetMessages(&config.User{
 		UserId:                 123,
 		SummaryMessageTemplate: "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})",
-		DetailMessageTemplate:  "{{ .RentalObject.KindOfFuel }} {{ .RentalObject.PriceProducer1 }}€ -> {{ netPrice . }}€",
+		DetailMessageTemplate:  "{{ .RentalObject.KindOfFuel | toString | italic }} {{ .RentalObject.PriceProducer1 | toString | bold }}€ -> {{ round ( taxPrice . ) 2 }}€ / {{ round ( netCost . ) 2 }}€",
 	})
 
 	if err != nil {
@@ -135,12 +141,12 @@ func TestTaxNetto(t *testing.T) {
 	}
 
 	contents := []string{
-		"Benzin 90000€ -> 900€",
-		"Diesel 90000€ -> 900€",
-		"Plug-in-Hybrid 90000€ -> 450€",
-		"Elektro 90000€ -> 450€",
-		"Elektro 60000€ -> 150€",
-		"Elektro 90000€ -> 450€",
+		"_Benzin_ *90000*€ -> 900€ / 668€",
+		"_Diesel_ *90000*€ -> 900€ / 668€",
+		"_Plug-in-Hybrid_ *90000*€ -> 450€ / 479€",
+		"_Elektro_ *90000*€ -> 450€ / 479€",
+		"_Elektro_ *60000*€ -> 150€ / 353€",
+		"_Elektro_ *60001*€ -> 300.01€ / 416€",
 	}
 
 	for _, val := range contents {

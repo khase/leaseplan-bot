@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/khase/leaseplanabocarexporter v1.1.1-0.20220814123254-c66f865e2bd5
+	github.com/khase/leaseplanabocarexporter v1.1.1
 	github.com/prometheus/client_golang v1.13.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.12.0

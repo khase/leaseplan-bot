@@ -265,11 +265,11 @@ func fillTemplate(templateString string, input interface{}) (string, error) {
 		New("Template").
 		Funcs(sprig.FuncMap()).
 		Funcs(template.FuncMap{
-			"portalUrl" portalUrl,
-			"taxPrice": taxPrice,
-			"netCost":  netCost,
-			"italic":   italic,
-			"bold":     bold,
+			"portalUrl": portalUrl,
+			"taxPrice":  taxPrice,
+			"netCost":   netCost,
+			"italic":    italic,
+			"bold":      bold,
 		}).
 		Parse(templateString)
 

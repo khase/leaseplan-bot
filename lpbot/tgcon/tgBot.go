@@ -49,6 +49,14 @@ var (
 		[]string{
 			"username",
 		})
+	totalPanicsCatched = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tgcon_total_panics_catched",
+			Help: "The total number of panics catched",
+		},
+		[]string{
+			"username",
+		})
 
 	ErrTelegramTokenUnser = errors.New("no telegram token has been provided")
 
@@ -138,6 +146,20 @@ func (bot *TgConnector) Shutdown() {
 }
 
 func (bot *TgConnector) handleMessage(message *tgbotapi.Message) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("catched Panic: %+v\n", r)
+			totalPanicsCatched.WithLabelValues(message.From.FirstName).Inc()
+
+			msg := tgbotapi.NewMessage(
+				message.Chat.ID,
+				fmt.Sprintf("Ouch, da ist aber etwas richtig schief gelaufen 🤯\nWende dich bitte an den Bot-Admin."))
+			msg.ReplyToMessageID = message.MessageID
+
+			bot.telegram.Send(msg)
+		}
+	}()
+
 	totalMessagesRecieved.WithLabelValues(message.From.FirstName).Inc()
 
 	if !message.IsCommand() {

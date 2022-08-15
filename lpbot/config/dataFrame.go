@@ -265,6 +265,7 @@ func fillTemplate(templateString string, input interface{}) (string, error) {
 		New("Template").
 		Funcs(sprig.FuncMap()).
 		Funcs(template.FuncMap{
+			"portalUrl" portalUrl,
 			"taxPrice": taxPrice,
 			"netCost":  netCost,
 			"italic":   italic,
@@ -312,4 +313,8 @@ func italic(text string) string {
 
 func bold(text string) string {
 	return fmt.Sprintf("*%s*", text)
+}
+
+func portalUrl(car dto.Item) string {
+	return fmt.Sprintf("[%s](https://www.leaseplan-abocar.de/offer-details/%s/%s)", car.OfferTypeName, car.Ident, car.RentalObject.Ident)
 }

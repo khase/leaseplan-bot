@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"math/rand"
@@ -165,6 +166,9 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 	}
 
 	if len(added) < testLength {
+		if len(dataFrame.Current) > 0 {
+			return nil, errors.New("Test impossible, no data yet")
+		}
 		for i := len(added); i < testLength; i++ {
 			line, err := getCarDetails(&dataFrame.Current[rand.Intn(len(dataFrame.Current))], user.DetailMessageTemplate)
 			if err != nil {
@@ -180,6 +184,9 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 	}
 
 	if len(removed) < testLength {
+		if len(dataFrame.Current) > 0 {
+			return nil, errors.New("Test impossible, no data yet")
+		}
 		for i := len(removed); i < testLength; i++ {
 			line, err := getCarDetails(&dataFrame.Current[rand.Intn(len(dataFrame.Current))], user.DetailMessageTemplate)
 			if err != nil {

@@ -8,11 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2   
+        uses: actions/checkout@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          fetch-depth: 0  
-      - name: Git Version
-        uses: codacy/git-version@2.5.4
+          images: |
+            ${{ secrets.DOCKER_REPOSITORY }}
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -25,11 +32,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          push: true
-          images: |
-            ${{ secrets.DOCKER_REPOSITORY }}
-          tags: |
-            latest
-            ${{ steps.gitversion.outputs.major }}
-            ${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}
-            ${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}.${{ steps.gitversion.outputs.patch }}
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

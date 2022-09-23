@@ -29,10 +29,10 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            ${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}.${{ steps.gitversion.outputs.patch }}
-            ${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}
-            ${{ steps.gitversion.outputs.major }}
-            latest
+            type=raw,value=${{ steps.gitversion.outputs.major }},enable=${{ steps.gitversion.outputs.major != 0 }}
+            type=raw,value=${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}
+            type=raw,value=${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}.${{ steps.gitversion.outputs.patch }}
+            type=raw,value=latest
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx

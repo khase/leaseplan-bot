@@ -13,7 +13,7 @@ jobs:
           fetch-depth: 0
       - name: Git Version
         id: gitversion
-        uses: codacy/git-version@2.5.4
+        uses: gittools/actions/gitversion/execute@v0.9.7
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4

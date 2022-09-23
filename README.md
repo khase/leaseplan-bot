@@ -89,7 +89,9 @@ Example (current default message formats can be found in the [user struct](lpbot
 ```template
 {{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})
 ```
+
 Which will render as following:
+
 ```text
 Änderungen: 113 -> 112 (+0, -1)
 ```
@@ -108,7 +110,7 @@ bold      | string    | wraps the string in asteriks so that Telegram will rende
 
 Using this command you can overwrite your personal detail message format. Internally the bot uses the `html/template` engine to validate your format. A detailed documentation can be found at the [official package documentation](https://pkg.go.dev/html/template#Template) (this documentation is quite "tecky" but i did not find somethin more beginner friendly yet 🙁).
 
-The passed root object is the current [dto.Item](https://github.com/khase/leaseplanabocarexporter/blob/master/dto/item.go) which contains all known data about a single car offer.
+The passed root object is [dto.Item](https://github.com/khase/leaseplanabocarexporter/blob/master/dto/item.go) which contains all known data about a single car offer.
 The most interesting Data (e.g. car model, net price or engine type) can be found in the property [RentalObject](https://github.com/khase/leaseplanabocarexporter/blob/master/dto/rental_object.go)
 
 Example (current default message formats can be found in the [user struct](lpbot/config/user.go)):
@@ -119,7 +121,9 @@ Example (current default message formats can be found in the [user struct](lpbot
   BLP: {{ .RentalObject.PriceProducer1 }}€, BGV: {{.SalaryWaiver}}€, Netto: ~{{ round ( netCost . ) 2 }}€
   Verfügbar: {{.RentalObject.DateRegistration.Format \"02.01.2006\"}}
 ```
+
 Which will render as following:
+
 ```text
 Some manufacturers car 
   PS: 1337, Antrieb: Plug-in-Hybrid

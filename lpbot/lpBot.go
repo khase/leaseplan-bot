@@ -11,6 +11,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/khase/leaseplan-bot/lpbot/config"
+	"github.com/khase/leaseplan-bot/lpbot/lpcon"
 	"github.com/khase/leaseplan-bot/lpbot/tgcon"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -22,7 +23,7 @@ var (
 	ErrExternalInterrupt       = errors.New("interrupted from external signal")
 )
 
-func StartBot(token string, debug bool, userDataFile string, createNew bool) error {
+func StartBot(token string, debug bool, userDataFile string, createNew bool, watcherDelay int) error {
 	http.Handle("/metrics", promhttp.Handler())
 	go http.ListenAndServe(":2112", nil)
 
@@ -72,7 +73,7 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool) err
 		}
 	}()
 
-	startActiveHandlers(UserMap, tgBot.GetTgBotApi())
+	startActiveHandlers(UserMap, tgBot.GetTgBotApi(), watcherDelay)
 
 	for {
 		for command := range commandChannel {
@@ -86,11 +87,12 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool) err
 	}
 }
 
-func startActiveHandlers(userMap *config.UserMap, bot *tgbotapi.BotAPI) error {
+func startActiveHandlers(userMap *config.UserMap, bot *tgbotapi.BotAPI, delay int) error {
+	lpcon.SetTgBotForWatcher(bot)
+	lpcon.SetWatcherDelay(delay)
 	for _, user := range userMap.Users {
 		if user.WatcherActive {
-			handler := NewUserHandler(user)
-			handler.StartWatcher(bot)
+			lpcon.RegisterUserWatcher(user)
 		}
 	}
 

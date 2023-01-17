@@ -2,21 +2,44 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"time"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/khase/leaseplanabocarexporter/dto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	cacheBasePath = "cache"
+	cacheBasePath            = "cache"
+	userLeaseplanCarsVisible = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "lpcon_cars_visible",
+			Help: "Number of cars visible to the user",
+		},
+		[]string{
+			"username",
+		})
+	totalMessagesSent = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tgcon_total_messages_sent",
+			Help: "The total number of messages sent",
+		},
+		[]string{
+			"username",
+		})
 )
 
 type User struct {
 	UserMap *UserMap `yaml:"-"`
 
-	UserId         int64  `yaml:"UserId,omitempty"`
-	FriendlyName   string `yaml:"FriendlyName,omitempty"`
-	LeaseplanToken string `yaml:"LeaseplanToken,omitempty"`
+	UserId            int64  `yaml:"UserId,omitempty"`
+	FriendlyName      string `yaml:"FriendlyName,omitempty"`
+	LeaseplanToken    string `yaml:"LeaseplanToken,omitempty"`
+	LeaseplanLevelKey string `yaml:"LeaseplanLevelKey,omitempty"`
 
 	WatcherActive bool  `yaml:"WatcherActive"`
 	WatcherDelay  int32 `yaml:"WatcherDelay,omitempty"`
@@ -75,4 +98,29 @@ func (user *User) StartWatcher() {
 
 func (user *User) StopWatcher() {
 	user.WatcherActive = false
+}
+
+func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
+	userLeaseplanCarsVisible.WithLabelValues(user.FriendlyName).Set(float64(len(update)))
+	log.Printf("Update for %s(%d): got %d car items", user.FriendlyName, user.UserId, len(update))
+	frame := NewDataFrame(user.LastFrame.Current, update)
+	log.Printf("Update for %s(%d): found differences: +%d, -%d", user.FriendlyName, user.UserId, len(frame.Added), len(frame.Removed))
+
+	if frame.HasChanges {
+		messages, err := frame.GetMessages(user)
+		if err != nil {
+			log.Printf("Update for %s(%d): got an error: %s", user.FriendlyName, user.UserId, err)
+		}
+
+		totalMessagesSent.WithLabelValues(user.FriendlyName).Add(float64(len(messages)))
+		go func() {
+			time.Sleep(time.Duration(user.WatcherDelay) * time.Minute)
+			for _, message := range messages {
+				bot.Send(message)
+			}
+		}()
+	}
+
+	user.LastFrame = frame
+	user.SaveUserCache()
 }

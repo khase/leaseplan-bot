@@ -69,7 +69,7 @@ func (watcher *LpWatcher) Watch(itemChannel chan []dto.Item) {
 	for watcher.isActive {
 		totalRequestsStarted.WithLabelValues(watcher.user.FriendlyName).Inc()
 		requestStart := time.Now()
-		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 100)
+		carList, err := pkg.GetAllCars(watcher.user.LeaseplanToken, 0, 90)
 		requestDuration := time.Since(requestStart)
 		requestTime.WithLabelValues(watcher.user.FriendlyName).Set(float64(requestDuration.Milliseconds()))
 		if err != nil {

@@ -23,6 +23,7 @@ Command                                             | Short description
 [login](#login)                                     | log-in to leaseplan using username/password
 [settoken](#settoken)                               | log-in to leaseplan using your access token
 [~~connect~~](#connect)                             | ~~subscribe to change notifications of another user~~
+[throttle](#throttle)                               | drosselt deine nachrichten
 [setsummarymessageformat](#setsummarymessageformat) | updates personal summary message format
 [setdetailmessageformat](#setdetailmessageformat)   | updates personal detail message format
 [test](#test)                                       | returns a test message
@@ -77,6 +78,15 @@ After a successful login the bot will internally save a token used for retrievin
 
 This command was originally planed as a way to "piggibag" to another users updates.
 Unfortunately the command is not yet implemented. 😔
+
+### throttle
+
+This command throttles your messages to be limited to 1 update every n Minutes.
+Note: One update can consist of multiple messages beeing sent since one message has a limited capacity
+
+```command
+/throttle <throttle rate in minutes>
+```
 
 ### setsummarymessageformat
 

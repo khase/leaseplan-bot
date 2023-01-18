@@ -41,6 +41,8 @@ type User struct {
 	LeaseplanToken    string `yaml:"LeaseplanToken,omitempty"`
 	LeaseplanLevelKey string `yaml:"LeaseplanLevelKey,omitempty"`
 
+	IsAdmin bool `yaml:"IsAdmin,omitempty"`
+
 	WatcherActive bool  `yaml:"WatcherActive"`
 	WatcherDelay  int32 `yaml:"WatcherDelay,omitempty"`
 
@@ -58,6 +60,7 @@ func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 	user.LeaseplanToken = ""
 	user.WatcherActive = false
 	user.WatcherDelay = 15
+	user.IsAdmin = false
 	user.SummaryMessageTemplate = "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})"
 	user.DetailMessageTemplate = "{{ portalUrl . }}\n  PS: {{ .RentalObject.PowerHp }}, Antrieb: {{ .RentalObject.KindOfFuel }}\n  BLP: {{ .RentalObject.PriceProducer1 }}€, BGV: {{.SalaryWaiver}}€, Netto: ~{{ round ( netCost . ) 2 }}€\n  Verfügbar: {{.RentalObject.DateRegistration.Format \"02.01.2006\"}}"
 	user.LastFrame = NewDataFrame(nil, nil)
@@ -101,6 +104,12 @@ func (user *User) StopWatcher() {
 }
 
 func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
+	elapsed := time.Since(user.LastFrame.Timestamp)
+	if elapsed.Minutes() < float64(user.WatcherDelay) {
+		log.Printf("Update for %s(%d): dropped (user throtteling, elapsed time %.2f / %d minutes)", user.FriendlyName, user.UserId, elapsed.Minutes(), user.WatcherDelay)
+		return
+	}
+
 	userLeaseplanCarsVisible.WithLabelValues(user.FriendlyName).Set(float64(len(update)))
 	log.Printf("Update for %s(%d): got %d car items", user.FriendlyName, user.UserId, len(update))
 	frame := NewDataFrame(user.LastFrame.Current, update)
@@ -114,13 +123,15 @@ func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
 
 		totalMessagesSent.WithLabelValues(user.FriendlyName).Add(float64(len(messages)))
 		go func() {
-			time.Sleep(time.Duration(user.WatcherDelay) * time.Minute)
+			if !user.IsAdmin {
+				time.Sleep(5 * time.Minute)
+			}
 			for _, message := range messages {
 				bot.Send(message)
 			}
 		}()
-	}
 
-	user.LastFrame = frame
-	user.SaveUserCache()
+		user.LastFrame = frame
+		user.SaveUserCache()
+	}
 }

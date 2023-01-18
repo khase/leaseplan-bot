@@ -48,6 +48,7 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool, wat
 	tgBot.AddCommand(LoginCmd)
 	tgBot.AddCommand(TokenCmd)
 	tgBot.AddCommand(ConnectCmd)
+	tgBot.AddCommand(ThrottleCmd)
 	tgBot.AddCommand(SummaryFormatCmd)
 	tgBot.AddCommand(DetailFormatCmd)
 	tgBot.AddCommand(TestFormatCmd)

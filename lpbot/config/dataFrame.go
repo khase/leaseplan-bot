@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/Masterminds/sprig"
 	"github.com/khase/leaseplanabocarexporter/dto"
@@ -16,16 +17,18 @@ import (
 )
 
 type DataFrame struct {
-	Previous []dto.Item `yaml:"Previous,omitempty"`
-	Current  []dto.Item `yaml:"Current,omitempty"`
-	Added    []dto.Item `yaml:"Added,omitempty"`
-	Removed  []dto.Item `yaml:"Removed,omitempty"`
+	Timestamp time.Time  `yaml:"Timestamp,omitempty"`
+	Previous  []dto.Item `yaml:"Previous,omitempty"`
+	Current   []dto.Item `yaml:"Current,omitempty"`
+	Added     []dto.Item `yaml:"Added,omitempty"`
+	Removed   []dto.Item `yaml:"Removed,omitempty"`
 
 	HasChanges bool `yaml:"HasChanges,omitempty"`
 }
 
 func NewEmptyDataFrame() *DataFrame {
 	frame := new(DataFrame)
+	frame.Timestamp = time.Now()
 	frame.Previous = []dto.Item{}
 	frame.Current = []dto.Item{}
 	frame.Added = []dto.Item{}
@@ -52,6 +55,7 @@ func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
 
 func LoadDataFrameFile(path string) (*DataFrame, error) {
 	frame := NewEmptyDataFrame()
+	frame.Timestamp = time.Now().Add(-24 * time.Hour)
 
 	strData, err := os.ReadFile(path)
 	if err != nil {

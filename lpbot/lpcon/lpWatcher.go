@@ -117,6 +117,10 @@ func (watcher *LpWatcher) Start() {
 
 	for update := range updateChannel {
 		for _, user := range watcher.userlist {
+			if user.LeaseplanLevelKey != watcher.levelKey {
+				watcher.reallocateUser(user)
+				continue
+			}
 			if user.WatcherActive {
 				user.Update(update, tgBot)
 			}

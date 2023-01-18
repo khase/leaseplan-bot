@@ -2,6 +2,8 @@ package lpbot
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/khase/leaseplan-bot/lpbot/config"
@@ -32,6 +34,14 @@ var (
 		Description:      "",
 		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
 			return handlePauseCommand(message, UserMap.Users[message.From.ID])
+		},
+	}
+	ThrottleCmd = &tgcon.MessageCommand{
+		CommandTrigger:   "throttle",
+		ShortDescription: "drosselt deine nachrichten",
+		Description:      "Drosselt deine Nachrichten sodass du nur noch maximal ein Update alle n Minuten bekommst. (Ein Update kann dennoch mehrere Nachrichten generieren)",
+		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+			return handleThrottleCommand(message, UserMap.Users[message.From.ID])
 		},
 	}
 	WhoamiCmd = &tgcon.MessageCommand{
@@ -66,6 +76,43 @@ func handlePauseCommand(message *tgbotapi.Message, user *config.User) ([]tgbotap
 	lpcon.UnregisterUserWatcher(user)
 
 	return nil, nil
+}
+
+func handleThrottleCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
+	if user == nil {
+		return nil, tgcon.ErrCommandPermittedForUnknownUser
+	}
+
+	command := strings.Split(message.Text, " ")
+
+	var text string
+	if len(command) == 1 {
+		if user.WatcherDelay <= 5 {
+			text = fmt.Sprintf("Du bekommst deine Updates so schnell es geht 👍")
+		} else {
+			text = fmt.Sprintf("Deine Updates sind gedrosselt auf maximal 1 Update alle %d Minuten", user.WatcherDelay)
+		}
+	} else if len(command) == 2 {
+		throttle, err := strconv.Atoi(command[1])
+		if err != nil {
+			return nil, err
+		}
+
+		if !user.IsAdmin && (throttle < 15) {
+			text = fmt.Sprintf("Sorry, das geht nicht. Ich will kein Ärger mit Leaseplan 😨🤷‍♂️.")
+		} else {
+			user.WatcherDelay = int32(throttle)
+			user.Save()
+			text = fmt.Sprintf("Deine Updates sind gedrosselt auf maximal 1 Update alle %d Minuten", user.WatcherDelay)
+		}
+	}
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		text)
+	msg.ReplyToMessageID = message.MessageID
+
+	return []tgbotapi.Chattable{msg}, nil
 }
 
 func handleStartCommand(message *tgbotapi.Message, userMap *config.UserMap) ([]tgbotapi.Chattable, error) {

@@ -49,6 +49,9 @@ type User struct {
 	SummaryMessageTemplate string `yaml:"SummaryMessageTemplate,omitempty"`
 	DetailMessageTemplate  string `yaml:"DetailMessageTemplate,omitempty"`
 
+	IgnoreDetails bool `yaml:"IgnoreDetails,omitempty"`
+	IgnoreRemoved bool `yaml:"IgnoreRemoved,omitempty"`
+
 	LastFrame *DataFrame `yaml:"-"`
 }
 
@@ -60,6 +63,8 @@ func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 	user.LeaseplanToken = ""
 	user.WatcherActive = false
 	user.WatcherDelay = 15
+	user.IgnoreDetails = false
+	user.IgnoreRemoved = false
 	user.IsAdmin = false
 	user.SummaryMessageTemplate = "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})"
 	user.DetailMessageTemplate = "{{ portalUrl . }}\n  PS: {{ .RentalObject.PowerHp }}, Antrieb: {{ .RentalObject.KindOfFuel }}\n  BLP: {{ .RentalObject.PriceProducer1 }}€, BGV: {{.SalaryWaiver}}€, Netto: ~{{ round ( netCost . ) 2 }}€\n  Verfügbar: {{.RentalObject.DateRegistration.Format \"02.01.2006\"}}"

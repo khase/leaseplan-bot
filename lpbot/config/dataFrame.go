@@ -133,12 +133,14 @@ func (dataFrame *DataFrame) getMessagesInternal(user *User, testLength int) ([]t
 	}
 	messages = append(messages, summaryMessage)
 
-	detailMessages, err := dataFrame.getDetailMessages(user, testLength)
-	if err != nil {
-		return nil, err
-	}
-	for _, msg := range detailMessages {
-		messages = append(messages, msg)
+	if !user.IgnoreDetails {
+		detailMessages, err := dataFrame.getDetailMessages(user, testLength)
+		if err != nil {
+			return nil, err
+		}
+		for _, msg := range detailMessages {
+			messages = append(messages, msg)
+		}
 	}
 
 	return messages, nil
@@ -209,7 +211,7 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 			messages = addMessageLine(buf, line, user.UserId, messages)
 		}
 	}
-	if len(removed) > 0 {
+	if !user.IgnoreRemoved && len(removed) > 0 {
 		if len(added) > 0 {
 			buf.WriteString("\n")
 		}

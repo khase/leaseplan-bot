@@ -24,6 +24,9 @@ Command                                             | Short description
 [login](#login)                                     | log-in to leaseplan using username/password
 [settoken](#settoken)                               | log-in to leaseplan using your access token
 [~~connect~~](#connect)                             | ~~subscribe to change notifications of another user~~
+[throttle](#throttle)                               | sets a minumum delay between updates
+[ignoreDetails](#ignoreDetails)                     | controls weather or not your updates contain detail informations about cars
+[ignoreRemoved](#ignoreRemoved)                     | controls weather or not your updates contain informations about removed cars
 [setsummarymessageformat](#setsummarymessageformat) | updates personal summary message format
 [setdetailmessageformat](#setdetailmessageformat)   | updates personal detail message format
 [test](#test)                                       | returns a test message
@@ -78,6 +81,42 @@ After a successful login the bot will internally save a token used for retrievin
 
 This command was originally planed as a way to "piggibag" to another users updates.
 Unfortunately the command is not yet implemented. 😔
+
+### throttle
+
+This command throttles your messages to be limited to 1 update every n Minutes.
+Note: One update can consist of multiple messages beeing sent since one message has a limited capacity
+
+```command
+/throttle <throttle rate in minutes>
+```
+
+### ignoreDetails
+
+This command sets a flag for your user that controlls weater or not your updates should contain detail informations about cars.
+Using the command without any parameters enables the feature effectively skipping generation of detail messages.
+
+To disable the feature add any of the following as an argument: `0`, `f`, `F`, `FALSE`, `false`, `False`
+
+```command
+/ignoreDetails
+/ignoreDetails 0
+```
+
+
+### ignoreRemoved
+
+This command sets a flag for your user that controlls weater or not your updates should contain detail informations about removed cars.
+Using the command without any parameters enables the feature effectively skipping generation of detail messages for removed cars.
+
+To disable the feature add any of the following as an argument: `0`, `f`, `F`, `FALSE`, `false`, `False`
+
+```command
+/ignoreRemoved
+/ignoreRemoved 0
+```
+
+
 
 ### setsummarymessageformat
 

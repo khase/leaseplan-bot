@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/Masterminds/sprig"
 	"github.com/khase/leaseplanabocarexporter/dto"
@@ -16,16 +17,18 @@ import (
 )
 
 type DataFrame struct {
-	Previous []dto.Item `yaml:"Previous,omitempty"`
-	Current  []dto.Item `yaml:"Current,omitempty"`
-	Added    []dto.Item `yaml:"Added,omitempty"`
-	Removed  []dto.Item `yaml:"Removed,omitempty"`
+	Timestamp time.Time  `yaml:"Timestamp,omitempty"`
+	Previous  []dto.Item `yaml:"Previous,omitempty"`
+	Current   []dto.Item `yaml:"Current,omitempty"`
+	Added     []dto.Item `yaml:"Added,omitempty"`
+	Removed   []dto.Item `yaml:"Removed,omitempty"`
 
 	HasChanges bool `yaml:"HasChanges,omitempty"`
 }
 
 func NewEmptyDataFrame() *DataFrame {
 	frame := new(DataFrame)
+	frame.Timestamp = time.Now()
 	frame.Previous = []dto.Item{}
 	frame.Current = []dto.Item{}
 	frame.Added = []dto.Item{}
@@ -52,6 +55,7 @@ func NewDataFrame(previous []dto.Item, current []dto.Item) *DataFrame {
 
 func LoadDataFrameFile(path string) (*DataFrame, error) {
 	frame := NewEmptyDataFrame()
+	frame.Timestamp = time.Now().Add(-24 * time.Hour)
 
 	strData, err := os.ReadFile(path)
 	if err != nil {
@@ -129,12 +133,14 @@ func (dataFrame *DataFrame) getMessagesInternal(user *User, testLength int) ([]t
 	}
 	messages = append(messages, summaryMessage)
 
-	detailMessages, err := dataFrame.getDetailMessages(user, testLength)
-	if err != nil {
-		return nil, err
-	}
-	for _, msg := range detailMessages {
-		messages = append(messages, msg)
+	if !user.IgnoreDetails {
+		detailMessages, err := dataFrame.getDetailMessages(user, testLength)
+		if err != nil {
+			return nil, err
+		}
+		for _, msg := range detailMessages {
+			messages = append(messages, msg)
+		}
 	}
 
 	return messages, nil
@@ -205,7 +211,7 @@ func (dataFrame *DataFrame) getDetailMessages(user *User, testLength int) ([]tgb
 			messages = addMessageLine(buf, line, user.UserId, messages)
 		}
 	}
-	if len(removed) > 0 {
+	if !user.IgnoreRemoved && len(removed) > 0 {
 		if len(added) > 0 {
 			buf.WriteString("\n")
 		}

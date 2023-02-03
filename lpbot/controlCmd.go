@@ -2,9 +2,12 @@ package lpbot
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/khase/leaseplan-bot/lpbot/config"
+	"github.com/khase/leaseplan-bot/lpbot/lpcon"
 	"github.com/khase/leaseplan-bot/lpbot/tgcon"
 )
 
@@ -33,6 +36,30 @@ var (
 			return handlePauseCommand(message, UserMap.Users[message.From.ID])
 		},
 	}
+	ThrottleCmd = &tgcon.MessageCommand{
+		CommandTrigger:   "throttle",
+		ShortDescription: "drosselt deine nachrichten",
+		Description:      "Drosselt deine Nachrichten sodass du nur noch maximal ein Update alle n Minuten bekommst. (Ein Update kann dennoch mehrere Nachrichten generieren)",
+		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+			return handleThrottleCommand(message, UserMap.Users[message.From.ID])
+		},
+	}
+	IgnoreDetailsCmd = &tgcon.MessageCommand{
+		CommandTrigger:   "ignoreDetails",
+		ShortDescription: "sendet keine details mehr",
+		Description:      "",
+		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+			return handleIgnoreDetailsCommand(message, UserMap.Users[message.From.ID])
+		},
+	}
+	IgnoreRemovedCmd = &tgcon.MessageCommand{
+		CommandTrigger:   "ignoreRemoved",
+		ShortDescription: "sendet keine details für entfernte angebote",
+		Description:      "",
+		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+			return handleIgnoreRemovedCommand(message, UserMap.Users[message.From.ID])
+		},
+	}
 	WhoamiCmd = &tgcon.MessageCommand{
 		CommandTrigger:   "whoami",
 		ShortDescription: "gibt alle über dich bekannten Infos zurück",
@@ -49,9 +76,8 @@ func handleResumeCommand(message *tgbotapi.Message, user *config.User) ([]tgbota
 	}
 
 	user.StartWatcher()
-	// handler := NewUserHandler(user)
-	// handler.StartWatcher(bot)
 	user.Save()
+	lpcon.RegisterUserWatcher(user)
 
 	return nil, nil
 }
@@ -63,8 +89,46 @@ func handlePauseCommand(message *tgbotapi.Message, user *config.User) ([]tgbotap
 
 	user.StopWatcher()
 	user.Save()
+	lpcon.UnregisterUserWatcher(user)
 
 	return nil, nil
+}
+
+func handleThrottleCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
+	if user == nil {
+		return nil, tgcon.ErrCommandPermittedForUnknownUser
+	}
+
+	command := strings.Split(message.Text, " ")
+
+	var text string
+	if len(command) == 1 {
+		if user.WatcherDelay <= 5 {
+			text = fmt.Sprintf("Du bekommst deine Updates so schnell es geht 👍")
+		} else {
+			text = fmt.Sprintf("Deine Updates sind gedrosselt auf maximal 1 Update alle %d Minuten", user.WatcherDelay)
+		}
+	} else if len(command) == 2 {
+		throttle, err := strconv.Atoi(command[1])
+		if err != nil {
+			return nil, err
+		}
+
+		if !user.IsAdmin && (throttle < 15) {
+			text = fmt.Sprintf("Sorry, das geht nicht. Ich will kein Ärger mit Leaseplan 😨🤷‍♂️.")
+		} else {
+			user.WatcherDelay = int32(throttle)
+			user.Save()
+			text = fmt.Sprintf("Deine Updates sind gedrosselt auf maximal 1 Update alle %d Minuten", user.WatcherDelay)
+		}
+	}
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		text)
+	msg.ReplyToMessageID = message.MessageID
+
+	return []tgbotapi.Chattable{msg}, nil
 }
 
 func handleStartCommand(message *tgbotapi.Message, userMap *config.UserMap) ([]tgbotapi.Chattable, error) {
@@ -89,6 +153,79 @@ func handleStartCommand(message *tgbotapi.Message, userMap *config.UserMap) ([]t
 		fmt.Sprintf(
 			"Hallo %s,\nich kenne dich jetzt und wir können beginnen 🎉🎊\nTeile mir am besten deinen Leaseplan Token (/setToken, /login) oder connecte dich mit einem deiner Kollegen (/connect).",
 			user.FriendlyName))
+
+	return []tgbotapi.Chattable{msg}, nil
+}
+
+func handleIgnoreDetailsCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
+	if user == nil {
+		return nil, tgcon.ErrCommandPermittedForUnknownUser
+	}
+
+	if len(message.CommandArguments()) > 0 {
+		arg, err := strconv.ParseBool(message.CommandArguments())
+		if err != nil {
+			msg := tgbotapi.NewMessage(
+				message.Chat.ID,
+				fmt.Sprintf("Was diese \"%s\"??? 0 oder 1?", user.FriendlyName))
+			msg.ReplyToMessageID = message.MessageID
+
+			return []tgbotapi.Chattable{msg}, err
+		}
+
+		user.IgnoreDetails = arg
+	} else {
+		user.IgnoreDetails = true
+	}
+
+	var msgTxt string
+	if user.IgnoreDetails {
+		msgTxt = fmt.Sprintf("Hallo %s,\ndu bekommst keine Detailnachrichten mehr.", user.FriendlyName)
+	} else {
+		msgTxt = fmt.Sprintf("Hallo %s,\ndu bekommst Detailnachrichten wieder.", user.FriendlyName)
+	}
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		msgTxt)
+	msg.ReplyToMessageID = message.MessageID
+
+	return []tgbotapi.Chattable{msg}, nil
+}
+
+func handleIgnoreRemovedCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
+
+	if user == nil {
+		return nil, tgcon.ErrCommandPermittedForUnknownUser
+	}
+
+	if len(message.CommandArguments()) > 0 {
+		arg, err := strconv.ParseBool(message.CommandArguments())
+		if err != nil {
+			msg := tgbotapi.NewMessage(
+				message.Chat.ID,
+				fmt.Sprintf("Was diese \"%s\"??? 0 oder 1?", user.FriendlyName))
+			msg.ReplyToMessageID = message.MessageID
+
+			return []tgbotapi.Chattable{msg}, err
+		}
+
+		user.IgnoreRemoved = arg
+	} else {
+		user.IgnoreRemoved = true
+	}
+
+	var msgTxt string
+	if user.IgnoreRemoved {
+		msgTxt = fmt.Sprintf("Hallo %s,\ndu bekommst keine Nachrichten für entfernte Angebote mehr.", user.FriendlyName)
+	} else {
+		msgTxt = fmt.Sprintf("Hallo %s,\ndu bekommst wieder Nachrichten für entfernte Angebote.", user.FriendlyName)
+	}
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		msgTxt)
+	msg.ReplyToMessageID = message.MessageID
 
 	return []tgbotapi.Chattable{msg}, nil
 }

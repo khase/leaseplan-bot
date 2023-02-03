@@ -127,11 +127,13 @@ func (dataFrame *DataFrame) GetTestMessages(user *User, testLength int) ([]tgbot
 
 func (dataFrame *DataFrame) getMessagesInternal(user *User, testLength int) ([]tgbotapi.Chattable, error) {
 	messages := make([]tgbotapi.Chattable, 0)
-	summaryMessage, err := dataFrame.getSummaryMessage(user)
-	if err != nil {
-		return nil, err
+	if !user.IgnoreRemoved || len(dataFrame.Added) > 0 {
+		summaryMessage, err := dataFrame.getSummaryMessage(user)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, summaryMessage)
 	}
-	messages = append(messages, summaryMessage)
 
 	if !user.IgnoreDetails {
 		detailMessages, err := dataFrame.getDetailMessages(user, testLength)

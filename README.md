@@ -1,4 +1,5 @@
 # Leaseplan-Bot
+![Docker Pulls](https://img.shields.io/docker/pulls/khase/leaseplan-bot)
 
 The Leaseplan bot is a Leaseplanabocar to Telegram Bridge which allows users to login to their Leaseplan account and recieve notifications when there are any changes in the available offerings.
 

@@ -4,16 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/khase/leaseplan-bot/lpbot/api"
 	"github.com/khase/leaseplan-bot/lpbot/config"
 	"github.com/khase/leaseplan-bot/lpbot/lpcon"
 	"github.com/khase/leaseplan-bot/lpbot/tgcon"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -24,6 +23,7 @@ var (
 )
 
 func StartBot(token string, debug bool, userDataFile string, createNew bool, watcherDelay int, watcherPageSize int) error {
+	go api.InitAndListen()
 
 	userMap, err := config.LoadUserMap(userDataFile)
 	if err != nil {

@@ -38,6 +38,14 @@ var (
 		[]string{
 			"username",
 		})
+	watcherLeaseplanCarsVisible = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "lpcon_cars_visible_to_group",
+			Help: "Number of cars visible to the group",
+		},
+		[]string{
+			"key",
+		})
 
 	watcherList        map[string]*LpWatcher = make(map[string]*LpWatcher)
 	tgBot              *tgbotapi.BotAPI
@@ -47,16 +55,35 @@ var (
 
 type LpWatcher struct {
 	levelKey string
-	userlist map[string]*config.User
 
-	isActive bool
+	userlist       map[string]*config.User
+	currentCarList []dto.Item
+
+	state *LpWatcherState
+}
+
+type LpWatcherState struct {
+	UserCount       int `json:"UserCount,omitempty"`
+	CurrentCarCount int `json:"CurrentCarCount,omitempty"`
+	Poll            struct {
+		StartTime string `json:"StartTime,omitempty"`
+		IsActive  bool   `json:"IsActive,omitempty"`
+		Duration  string `json:"Duration,omitempty"`
+	} `json:"Poll,omitempty"`
+	IsActive bool `json:"IsActive,omitempty"`
 }
 
 func NewLpWatcher(levelKey string) *LpWatcher {
 	watcher := new(LpWatcher)
 	watcher.levelKey = levelKey
 	watcher.userlist = make(map[string]*config.User)
-	watcher.isActive = false
+
+	watcher.state = &LpWatcherState{
+		UserCount:       0,
+		CurrentCarCount: 0,
+
+		IsActive: false,
+	}
 
 	return watcher
 }
@@ -100,22 +127,55 @@ func UnregisterUserWatcher(user *config.User) {
 	watcher.unregisterUser(user)
 }
 
+func GetStates() map[string]*LpWatcherState {
+	result := make(map[string]*LpWatcherState)
+
+	for key, element := range watcherList {
+		result[key] = element.state
+	}
+
+	return result
+}
+
+func GetCars() map[string][]dto.Item {
+	result := make(map[string][]dto.Item)
+
+	for key, element := range watcherList {
+		result[key] = element.currentCarList
+	}
+
+	return result
+}
+
+func GetWatcherKeys() []string {
+	result := make([]string, 0, len(watcherList))
+	for key := range watcherList {
+		result = append(result, key)
+	}
+
+	return result
+}
+
 func (watcher *LpWatcher) registerUser(user *config.User) {
 	log.Printf("Leaseplanwatcher for %s: adding user %s(%d)\n", watcher.levelKey, user.FriendlyName, user.UserId)
 	watcher.userlist[strconv.FormatInt(user.UserId, 10)] = user
+
+	watcher.state.UserCount = len(watcher.userlist)
 }
 
 func (watcher *LpWatcher) unregisterUser(user *config.User) {
 	log.Printf("Leaseplanwatcher for %s: removing user %s(%d)\n", watcher.levelKey, user.FriendlyName, user.UserId)
 	delete(watcher.userlist, strconv.FormatInt(user.UserId, 10))
+
+	watcher.state.UserCount = len(watcher.userlist)
 }
 
 func (watcher *LpWatcher) Stop() {
-	watcher.isActive = false
+	watcher.state.IsActive = false
 }
 
 func (watcher *LpWatcher) Start() {
-	watcher.isActive = true
+	watcher.state.IsActive = true
 
 	updateChannel := make(chan []dto.Item)
 	go watcher.watch(updateChannel)
@@ -135,14 +195,14 @@ func (watcher *LpWatcher) Start() {
 
 func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 	log.Printf("Leaseplanwatcher for %s: starting\n", watcher.levelKey)
-	watcher.isActive = true
+	watcher.state.IsActive = true
 	defer func() {
 		log.Printf("Leaseplanwatcher for %s: shutdown\n", watcher.levelKey)
-		watcher.isActive = false
+		watcher.state.IsActive = false
 		close(itemChannel)
 	}()
 
-	for watcher.isActive {
+	for watcher.state.IsActive {
 		if len(watcher.userlist) == 0 {
 			log.Printf("Leaseplanwatcher for %s: has no users in pool -> suspending for 30 sec\n", watcher.levelKey)
 			time.Sleep(30 * time.Second)
@@ -170,22 +230,36 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 
 		log.Printf("Leaseplanwatcher for %s: using donor token from %s(%d)\n", watcher.levelKey, donorUser.FriendlyName, donorUser.UserId)
 		totalRequestsStarted.WithLabelValues(donorUser.FriendlyName).Inc()
+
 		requestStart := time.Now()
+		watcher.state.Poll.StartTime = requestStart.UTC().String()
+		watcher.state.Poll.Duration = ""
+		watcher.state.Poll.IsActive = true
+
 		carList, err := pkg.GetAllCars(donorUser.LeaseplanToken, 0, watcherPageSize)
+
 		requestDuration := time.Since(requestStart)
+		watcher.state.Poll.Duration = requestDuration.String()
+		watcher.state.Poll.IsActive = false
+
+		watcherLeaseplanCarsVisible.WithLabelValues(watcher.levelKey).Set(float64(len(carList)))
 		requestTime.WithLabelValues(donorUser.FriendlyName).Set(float64(requestDuration.Milliseconds()))
+
 		if err != nil {
 			totalRequestErrors.WithLabelValues(donorUser.FriendlyName).Inc()
 			log.Printf("Leaseplanwatcher for %s with donor %s(%d): could not get car list %s\n", watcher.levelKey, donorUser.FriendlyName, donorUser.UserId, err)
 			continue
 		}
 
+		watcher.currentCarList = carList
+		watcher.state.CurrentCarCount = len(carList)
+
 		itemChannel <- carList
 
 		log.Printf("Leaseplanwatcher for %s: sleeping for %d minutes\n", watcher.levelKey, globalWatcherDelay)
 		for minutesToSleep := globalWatcherDelay; minutesToSleep > 0; minutesToSleep-- {
 			for secondsToSleep := 60; secondsToSleep > 0; secondsToSleep -= 5 {
-				if !watcher.isActive {
+				if !watcher.state.IsActive {
 					return
 				}
 				time.Sleep(5 * time.Second)

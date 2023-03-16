@@ -21,6 +21,7 @@ var (
 		},
 		[]string{
 			"username",
+			"key",
 		})
 	totalRequestErrors = promauto.NewCounterVec(
 		prometheus.CounterOpts{
@@ -29,6 +30,7 @@ var (
 		},
 		[]string{
 			"username",
+			"key",
 		})
 	requestTime = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -37,6 +39,7 @@ var (
 		},
 		[]string{
 			"username",
+			"key",
 		})
 	watcherLeaseplanCarsVisible = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -229,7 +232,7 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		}
 
 		log.Printf("Leaseplanwatcher for %s: using donor token from %s(%d)\n", watcher.levelKey, donorUser.FriendlyName, donorUser.UserId)
-		totalRequestsStarted.WithLabelValues(donorUser.FriendlyName).Inc()
+		totalRequestsStarted.WithLabelValues(donorUser.FriendlyName, watcher.levelKey).Inc()
 
 		requestStart := time.Now()
 		watcher.state.Poll.StartTime = requestStart.UTC().String()
@@ -242,11 +245,12 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		watcher.state.Poll.Duration = requestDuration.String()
 		watcher.state.Poll.IsActive = false
 
+		log.Printf("Update for %s: got %d car items", watcher.levelKey, len(carList))
 		watcherLeaseplanCarsVisible.WithLabelValues(watcher.levelKey).Set(float64(len(carList)))
-		requestTime.WithLabelValues(donorUser.FriendlyName).Set(float64(requestDuration.Milliseconds()))
+		requestTime.WithLabelValues(donorUser.FriendlyName, watcher.levelKey).Set(float64(requestDuration.Milliseconds()))
 
 		if err != nil {
-			totalRequestErrors.WithLabelValues(donorUser.FriendlyName).Inc()
+			totalRequestErrors.WithLabelValues(donorUser.FriendlyName, watcher.levelKey).Inc()
 			log.Printf("Leaseplanwatcher for %s with donor %s(%d): could not get car list %s\n", watcher.levelKey, donorUser.FriendlyName, donorUser.UserId, err)
 			continue
 		}
@@ -271,7 +275,7 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 func updateUserInfo(user *config.User) error {
 	lpUserInfo, err := pkg.GetUserInfo(user.LeaseplanToken)
 	if err != nil {
-		totalRequestErrors.WithLabelValues(user.FriendlyName).Inc()
+		totalRequestErrors.WithLabelValues(user.FriendlyName, user.LeaseplanLevelKey).Inc()
 		log.Printf("Leaseplanwatcher %s(%d): could not get userInfo: %s\n", user.FriendlyName, user.UserId, err)
 		return err
 	}

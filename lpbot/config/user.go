@@ -116,7 +116,6 @@ func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
 	}
 
 	userLeaseplanCarsVisible.WithLabelValues(user.FriendlyName).Set(float64(len(update)))
-	log.Printf("Update for %s(%d): got %d car items", user.FriendlyName, user.UserId, len(update))
 	frame := NewDataFrame(user.LastFrame.Current, update)
 	log.Printf("Update for %s(%d): found differences: +%d, -%d", user.FriendlyName, user.UserId, len(frame.Added), len(frame.Removed))
 

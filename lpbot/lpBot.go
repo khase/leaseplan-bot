@@ -23,9 +23,7 @@ var (
 	ErrExternalInterrupt       = errors.New("interrupted from external signal")
 )
 
-func StartBot(token string, debug bool, userDataFile string, createNew bool, watcherDelay int) error {
-	http.Handle("/metrics", promhttp.Handler())
-	go http.ListenAndServe(":2112", nil)
+func StartBot(token string, debug bool, userDataFile string, createNew bool, watcherDelay int, watcherPageSize int) error {
 
 	userMap, err := config.LoadUserMap(userDataFile)
 	if err != nil {
@@ -76,7 +74,7 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool, wat
 		}
 	}()
 
-	startActiveHandlers(UserMap, tgBot.GetTgBotApi(), watcherDelay)
+	startActiveHandlers(UserMap, tgBot.GetTgBotApi(), watcherDelay, watcherPageSize)
 
 	for {
 		for command := range commandChannel {
@@ -90,9 +88,11 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool, wat
 	}
 }
 
-func startActiveHandlers(userMap *config.UserMap, bot *tgbotapi.BotAPI, delay int) error {
+func startActiveHandlers(userMap *config.UserMap, bot *tgbotapi.BotAPI, delay int, pageSize int) error {
 	lpcon.SetTgBotForWatcher(bot)
 	lpcon.SetWatcherDelay(delay)
+	lpcon.SetWatcherPageSize(pageSize)
+
 	for _, user := range userMap.Users {
 		if user.WatcherActive {
 			lpcon.RegisterUserWatcher(user)

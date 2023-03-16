@@ -42,6 +42,7 @@ var (
 	watcherList        map[string]*LpWatcher = make(map[string]*LpWatcher)
 	tgBot              *tgbotapi.BotAPI
 	globalWatcherDelay int
+	watcherPageSize    int
 )
 
 type LpWatcher struct {
@@ -66,6 +67,10 @@ func SetTgBotForWatcher(bot *tgbotapi.BotAPI) {
 
 func SetWatcherDelay(delay int) {
 	globalWatcherDelay = delay
+}
+
+func SetWatcherPageSize(pageZize int) {
+	watcherPageSize = pageZize
 }
 
 func RegisterUserWatcher(user *config.User) {
@@ -166,7 +171,7 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		log.Printf("Leaseplanwatcher for %s: using donor token from %s(%d)\n", watcher.levelKey, donorUser.FriendlyName, donorUser.UserId)
 		totalRequestsStarted.WithLabelValues(donorUser.FriendlyName).Inc()
 		requestStart := time.Now()
-		carList, err := pkg.GetAllCars(donorUser.LeaseplanToken, 0, 100)
+		carList, err := pkg.GetAllCars(donorUser.LeaseplanToken, 0, watcherPageSize)
 		requestDuration := time.Since(requestStart)
 		requestTime.WithLabelValues(donorUser.FriendlyName).Set(float64(requestDuration.Milliseconds()))
 		if err != nil {

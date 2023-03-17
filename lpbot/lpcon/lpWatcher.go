@@ -252,13 +252,12 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		if err != nil {
 			totalRequestErrors.WithLabelValues(donorUser.FriendlyName, watcher.levelKey).Inc()
 			log.Printf("Leaseplanwatcher for %s with donor %s(%d): could not get car list %s\n", watcher.levelKey, donorUser.FriendlyName, donorUser.UserId, err)
-			continue
+		} else {
+			watcher.currentCarList = carList
+			watcher.state.CurrentCarCount = len(carList)
+
+			itemChannel <- carList
 		}
-
-		watcher.currentCarList = carList
-		watcher.state.CurrentCarCount = len(carList)
-
-		itemChannel <- carList
 
 		log.Printf("Leaseplanwatcher for %s: sleeping for %d minutes\n", watcher.levelKey, globalWatcherDelay)
 		for minutesToSleep := globalWatcherDelay; minutesToSleep > 0; minutesToSleep-- {

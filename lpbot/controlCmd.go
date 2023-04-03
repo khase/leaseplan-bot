@@ -68,7 +68,50 @@ var (
 			return handleWhoamiCommand(message, UserMap.Users[message.From.ID])
 		},
 	}
+	EulaCmd = &tgcon.MessageCommand{
+		CommandTrigger:   "eula",
+		ShortDescription: "End User License aggreement",
+		Description:      "",
+		Execute: func(message *tgbotapi.Message) ([]tgbotapi.Chattable, error) {
+			return handleEulaCommand(message, UserMap.Users[message.From.ID])
+		},
+	}
 )
+
+func handleEulaCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
+	if user == nil {
+		return nil, tgcon.ErrCommandPermittedForUnknownUser
+	}
+
+	command := strings.Split(message.Text, " ")
+
+	var text string
+	if len(command) == 1 {
+		text = fmt.Sprintf("Die EULA ist recht simpel:\n\nLeaseplan will keine bots gegen ihre API laufen haben und ich bin nicht verantwortlich für irgendwelche Konsequenzen die aus der verwendung des Bots entstehen.\n\nIch versuche allerdings so unauffällig wie möglich zu sein 😉.\n\nWenn du damit einverstanden bist, akzeptiere bitte mit '/eula 1'")
+	} else if len(command) == 2 {
+		eula, err := strconv.ParseBool(command[1])
+		if err != nil {
+			return nil, err
+		}
+
+		if !eula {
+			text = fmt.Sprintf("Schade dass du noch nicht auf meiner Seite bist. Teile dem Admin gerne deine Bedenken mit.")
+		} else {
+			user.AcceptEULA()
+			user.Save()
+			if user.EULA {
+				text = fmt.Sprintf("Vielen Dank für dein vertrauen. Du kannst den Bot ab sofort nutzen 🙂\n\nAktiviere deine Notifications mit /resume")
+			}
+		}
+	}
+
+	msg := tgbotapi.NewMessage(
+		message.Chat.ID,
+		text)
+	msg.ReplyToMessageID = message.MessageID
+
+	return []tgbotapi.Chattable{msg}, nil
+}
 
 func handleResumeCommand(message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
 	if user == nil {

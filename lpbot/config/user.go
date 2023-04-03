@@ -36,15 +36,18 @@ var (
 type User struct {
 	UserMap *UserMap `yaml:"-"`
 
-	UserId            int64  `yaml:"UserId,omitempty"`
-	FriendlyName      string `yaml:"FriendlyName,omitempty"`
+	UserId       int64  `yaml:"UserId,omitempty"`
+	FriendlyName string `yaml:"FriendlyName,omitempty"`
+	EULA         bool   `yaml:"EULA"`
+
 	LeaseplanToken    string `yaml:"LeaseplanToken,omitempty"`
 	LeaseplanLevelKey string `yaml:"LeaseplanLevelKey,omitempty"`
 
 	IsAdmin bool `yaml:"IsAdmin,omitempty"`
 
-	WatcherActive bool  `yaml:"WatcherActive"`
-	WatcherDelay  int32 `yaml:"WatcherDelay,omitempty"`
+	WatcherActive bool   `yaml:"WatcherActive"`
+	WatcherError  string `yaml:"WatcherError,omitempty"`
+	WatcherDelay  int32  `yaml:"WatcherDelay,omitempty"`
 
 	SummaryMessageTemplate string `yaml:"SummaryMessageTemplate,omitempty"`
 	DetailMessageTemplate  string `yaml:"DetailMessageTemplate,omitempty"`
@@ -60,8 +63,10 @@ func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 	user.UserMap = userMap
 	user.UserId = userId
 	user.FriendlyName = friendlyName
+	user.EULA = false
 	user.LeaseplanToken = ""
 	user.WatcherActive = false
+	user.WatcherError = ""
 	user.WatcherDelay = 15
 	user.IgnoreDetails = false
 	user.IgnoreRemoved = false
@@ -102,10 +107,15 @@ func (user *User) SaveUserCache() {
 
 func (user *User) StartWatcher() {
 	user.WatcherActive = true
+	user.WatcherError = ""
 }
 
 func (user *User) StopWatcher() {
 	user.WatcherActive = false
+}
+
+func (user *User) AcceptEULA() {
+	user.EULA = true
 }
 
 func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {

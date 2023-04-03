@@ -213,15 +213,24 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		}
 
 		var donorUser *config.User
+		// select donor token
+		// do we need to shuffle here? range seems to be "random"
 		for _, user := range watcher.userlist {
-			donorUser = user
+			if !user.WatcherActive {
+				continue
+			}
+			if !user.EULA {
+				user.WatcherError = "EULA not accepted. Accept with /eula true"
+				continue
+			}
 			if updateUserInfo(user) != nil {
 				continue
 			}
-			if donorUser.LeaseplanLevelKey != watcher.levelKey {
-				watcher.reallocateUser(donorUser)
+			if user.LeaseplanLevelKey != watcher.levelKey {
+				watcher.reallocateUser(user)
 				continue
 			}
+			donorUser = user
 			break
 		}
 
@@ -276,6 +285,9 @@ func updateUserInfo(user *config.User) error {
 	if err != nil {
 		totalRequestErrors.WithLabelValues(user.FriendlyName, user.LeaseplanLevelKey).Inc()
 		log.Printf("Leaseplanwatcher %s(%d): could not get userInfo: %s\n", user.FriendlyName, user.UserId, err)
+		user.WatcherError = err.Error()
+		user.WatcherActive = false
+		user.Save()
 		return err
 	}
 	user.LeaseplanLevelKey = lpUserInfo.AddressRole.RoleName

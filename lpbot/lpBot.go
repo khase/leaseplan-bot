@@ -75,6 +75,7 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool, wat
 		}
 	}()
 
+	sendSystemNotifications(UserMap, tgBot.GetTgBotApi())
 	startActiveHandlers(UserMap, tgBot.GetTgBotApi(), watcherDelay, watcherPageSize)
 
 	for {
@@ -84,6 +85,27 @@ func StartBot(token string, debug bool, userDataFile string, createNew bool, wat
 				fmt.Printf("Shutting down bot...\n")
 				time.Sleep(5 * time.Second)
 				return nil
+			}
+		}
+	}
+}
+
+func sendSystemNotifications(userMap *config.UserMap, bot *tgbotapi.BotAPI) {
+	for _, user := range userMap.Users {
+		for _, notification := range config.SystemNotifications {
+			if notification.Publish.After(user.LastSystemnotification) {
+				if notification.UserCondition(user) {
+					fmt.Printf("Sending System Notification to user %s(%d)\n", user.FriendlyName, user.UserId)
+					bot.Send(
+						tgbotapi.NewMessage(
+							user.UserId,
+							notification.Message,
+						),
+					)
+					notification.UserAction(user)
+				}
+				user.LastSystemnotification = notification.Publish
+				user.Save()
 			}
 		}
 	}

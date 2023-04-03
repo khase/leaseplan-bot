@@ -43,7 +43,8 @@ type User struct {
 	LeaseplanToken    string `yaml:"LeaseplanToken,omitempty"`
 	LeaseplanLevelKey string `yaml:"LeaseplanLevelKey,omitempty"`
 
-	IsAdmin bool `yaml:"IsAdmin,omitempty"`
+	IsAdmin                bool      `yaml:"IsAdmin,omitempty"`
+	LastSystemnotification time.Time `yaml:"LastSystemnotification,omitempty"`
 
 	WatcherActive bool   `yaml:"WatcherActive"`
 	WatcherError  string `yaml:"WatcherError,omitempty"`

@@ -61,6 +61,7 @@ type User struct {
 
 func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 	user := new(User)
+	user.LastSystemnotification = time.Now()
 	user.UserMap = userMap
 	user.UserId = userId
 	user.FriendlyName = friendlyName

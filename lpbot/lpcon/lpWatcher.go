@@ -216,7 +216,6 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 
 		var donorUser *config.User
 		// select donor token
-		// do we need to shuffle here? range seems to be "random"
 		rand.Seed(time.Now().Unix())
 		userIds := reflect.ValueOf(watcher.userlist).MapKeys()
 		for len(userIds) > 0 {

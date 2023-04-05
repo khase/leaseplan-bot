@@ -220,19 +220,29 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		rand.Seed(time.Now().Unix())
 		userIds := reflect.ValueOf(watcher.userlist).MapKeys()
 		for len(userIds) > 0 {
-			user := watcher.userlist[userIds[rand.Intn(len(userIds))].String()]
+			idx := rand.Intn(len(userIds))
+			userId := userIds[idx].String()
+			user := watcher.userlist[userId]
 			if !user.WatcherActive {
+				userIds[idx] = userIds[len(userIds)-1]
+				userIds = userIds[:len(userIds)-1]
 				continue
 			}
 			if !user.EULA {
 				user.WatcherError = "EULA not accepted. Accept with /eula true"
+				userIds[idx] = userIds[len(userIds)-1]
+				userIds = userIds[:len(userIds)-1]
 				continue
 			}
 			if updateUserInfo(user) != nil {
+				userIds[idx] = userIds[len(userIds)-1]
+				userIds = userIds[:len(userIds)-1]
 				continue
 			}
 			if user.LeaseplanLevelKey != watcher.levelKey {
 				watcher.reallocateUser(user)
+				userIds[idx] = userIds[len(userIds)-1]
+				userIds = userIds[:len(userIds)-1]
 				continue
 			}
 			donorUser = user

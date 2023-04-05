@@ -2,6 +2,8 @@ package lpcon
 
 import (
 	"log"
+	"math/rand"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -215,7 +217,10 @@ func (watcher *LpWatcher) watch(itemChannel chan []dto.Item) {
 		var donorUser *config.User
 		// select donor token
 		// do we need to shuffle here? range seems to be "random"
-		for _, user := range watcher.userlist {
+		rand.Seed(time.Now().Unix())
+		userIds := reflect.ValueOf(watcher.userlist).MapKeys()
+		for len(userIds) > 0 {
+			user := watcher.userlist[userIds[rand.Intn(len(userIds))].String()]
 			if !user.WatcherActive {
 				continue
 			}

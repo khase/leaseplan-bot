@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/khase/leaseplanabocarexporter/dto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,6 +21,14 @@ var (
 		prometheus.GaugeOpts{
 			Name: "lpcon_cars_visible",
 			Help: "Number of cars visible to the user",
+		},
+		[]string{
+			"username",
+		})
+	userLeaseplanCarsOfInterest = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "lpcon_cars_interest",
+			Help: "Number of cars the user could be interested in (filtered)",
 		},
 		[]string{
 			"username",
@@ -56,6 +66,8 @@ type User struct {
 	IgnoreDetails bool `yaml:"IgnoreDetails,omitempty"`
 	IgnoreRemoved bool `yaml:"IgnoreRemoved,omitempty"`
 
+	Filters []string `yaml:"Filters,omitempty"`
+
 	LastFrame *DataFrame `yaml:"-"`
 }
 
@@ -72,6 +84,7 @@ func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 	user.WatcherDelay = 15
 	user.IgnoreDetails = false
 	user.IgnoreRemoved = false
+	user.Filters = make([]string, 0)
 	user.IsAdmin = false
 	user.SummaryMessageTemplate = "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})"
 	user.DetailMessageTemplate = "{{ portalUrl . }}\n  PS: {{ .RentalObject.PowerHp }}, Antrieb: {{ .RentalObject.KindOfFuel }}\n  BLP: {{ .RentalObject.PriceProducer1 }}€, BGV: {{.SalaryWaiver}}€, Netto: ~{{ round ( netCost . ) 2 }}€\n  Verfügbar: {{.RentalObject.DateRegistration.Format \"02.01.2006\"}}"
@@ -81,6 +94,15 @@ func NewUser(userMap *UserMap, userId int64, friendlyName string) *User {
 
 func (user *User) GetHumanReadableUserInfo() (string, error) {
 	data, err := yaml.Marshal(user)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
+func (user *User) GetHumanReadableFilterList() (string, error) {
+	data, err := yaml.Marshal(user.Filters)
 	if err != nil {
 		return "", err
 	}
@@ -120,6 +142,32 @@ func (user *User) AcceptEULA() {
 	user.EULA = true
 }
 
+func (user *User) AddFilter(filter string) {
+	if user.Filters == nil {
+		user.Filters = make([]string, 0)
+	}
+
+	index := slices.IndexFunc(user.Filters, func(f string) bool { return f == filter })
+	if index > -1 {
+		return
+	}
+
+	user.Filters = append(user.Filters, filter)
+}
+
+func (user *User) RemoveFilter(filter string) {
+	if user.Filters == nil {
+		return
+	}
+
+	if len(user.Filters) == 0 {
+		return
+	}
+
+	index := slices.IndexFunc(user.Filters, func(f string) bool { return f == filter })
+	user.Filters = append(user.Filters[:index], user.Filters[index+1:]...)
+}
+
 func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
 	elapsed := time.Since(user.LastFrame.Timestamp)
 	if elapsed.Minutes() < float64(user.WatcherDelay) {
@@ -128,7 +176,10 @@ func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
 	}
 
 	userLeaseplanCarsVisible.WithLabelValues(user.FriendlyName).Set(float64(len(update)))
-	frame := NewDataFrame(user.LastFrame.Current, update)
+	filteredUpdate := FilterUpdateList(update, user.Filters)
+	userLeaseplanCarsOfInterest.WithLabelValues(user.FriendlyName).Set(float64(len(filteredUpdate)))
+
+	frame := NewDataFrame(user.LastFrame.Current, filteredUpdate)
 	log.Printf("Update for %s(%d): found differences: +%d, -%d", user.FriendlyName, user.UserId, len(frame.Added), len(frame.Removed))
 
 	if frame.HasChanges {
@@ -150,4 +201,33 @@ func (user *User) Update(update []dto.Item, bot *tgbotapi.BotAPI) {
 		user.LastFrame = frame
 		user.SaveUserCache()
 	}
+}
+
+func FilterUpdateList(updateList []dto.Item, filters []string) []dto.Item {
+	result := make([]dto.Item, 0)
+
+	// prime filter templates
+	filterTemplates := make([]string, 0)
+	for _, filter := range filters {
+		filterTemplate := fmt.Sprintf("{{%s}}", filter)
+		filterTemplates = append(filterTemplates, filterTemplate)
+	}
+
+ITEMLOOP:
+	for _, item := range updateList {
+		for _, filterTemplate := range filterTemplates {
+			resultString, err := fillTemplate(filterTemplate, item)
+			if err == nil {
+				resultBool, err := strconv.ParseBool(resultString)
+				if err == nil && resultBool == false {
+					// skip this car and not include in result list
+					continue ITEMLOOP
+				}
+			}
+		}
+
+		result = append(result, item)
+	}
+
+	return result
 }

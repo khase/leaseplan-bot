@@ -194,8 +194,70 @@ When the last dataframe does not contain any changes you will only get a summary
 
 ### filter
 
-This command was originally planed as a way to filter changes and only send messages when the detected change matches a user defined rule.
-Unfortunately the command is not yet implemented. 😔
+The filter command can be used to filter out specific car items.
+The filter list can be manipulated with the three subcommands `list`, `add` and `remove`
+
+You can define multiple filters which will be combined in an `or` fashion. (if one filter fails that item will be removed from your list)
+
+For evaluation the filters the `html/template` engine is used (much like in the templating section)
+Therefore you can access all properties the same way as in the `setdetailmessageformat` section.
+
+short recap:
+The passed root object is [dto.Item](https://github.com/khase/leaseplanabocarexporter/blob/master/dto/item.go) which contains all known data about a single car offer.
+The most interesting Data (e.g. car model, net price or engine type) can be found in the property [RentalObject](https://github.com/khase/leaseplanabocarexporter/blob/master/dto/rental_object.go)
+
+But in contrast you don't need the most outer curly braces `{{}}`.
+
+The Template has to evaluate to a boolean expression (e.g. `true`, `false`, `0`, `1`)
+Filters that do not evaluate in a known boolean value or do fail in any other way are ignored and don't affect the result list.
+
+Comparisons are built using a function like structure `operator arg1 arg2` and for quickstart the following operators are supported:
+
+Operator | Description
+---------|--------------------------------------------
+eq       | Returns the boolean truth of arg1 == arg2
+ne       | Returns the boolean truth of arg1 != arg2
+lt       | Returns the boolean truth of arg1 < arg2
+le       | Returns the boolean truth of arg1 <= arg2
+gt       | Returns the boolean truth of arg1 > arg2
+ge       | Returns the boolean truth of arg1 >= arg2
+and      | Returns the boolean truth of arg1 && arg2
+or       | Returns the boolean truth of arg1 || arg2
+
+A detailed documentation can be found at the [official package documentation](https://pkg.go.dev/html/template#Template)
+
+#### Examples
+
+##### List allyour currently active filters
+```
+/filter list
+```
+
+##### Add Filter to ignore all cars from VOLVO
+```filter
+ne (.RentalObject.CarLabel | lower) "volvo"
+```
+We are here retrieving the CarLabel (which is used to indicate the manufacturer by leaseplan) and converting it to it's lowercase representation to make the condition case-insensitive.
+
+To add this filter simply use the following command:
+```
+/filter add ne (.RentalObject.CarLabel | lower) "volvo"
+```
+
+##### Add Filter to ignore all cars with less than 300 HP
+```filter
+gt .RentalObject.PowerHp 300
+```
+
+To add this filter simply use the following command:
+```
+/filter add gt .RentalObject.PowerHp 300
+```
+
+##### Remove Filter to ignore all cars from VOLVO
+```
+/filter remove ne (.RentalObject.CarLabel | lower) "volvo"
+```
 
 ## Contribution
 

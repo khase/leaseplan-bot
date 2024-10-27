@@ -11,7 +11,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	gopkg.in/yaml.v2 v2.4.0
-	github.com/khase/leaseplanabocarexporter v1.1.2-0.20230822193137-06006925da05
+	github.com/khase/leaseplanabocarexporter v1.2.0
 )
 
 require (

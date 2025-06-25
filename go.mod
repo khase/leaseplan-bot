@@ -6,7 +6,7 @@ require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/khase/leaseplanabocarexporter v1.3.1
+	github.com/khase/leaseplanabocarexporter v1.3.2
 	github.com/prometheus/client_golang v1.16.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0

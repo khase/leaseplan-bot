@@ -92,7 +92,7 @@ func setToken(token string, message *tgbotapi.Message, user *config.User) ([]tgb
 		message.MessageID)
 	msg := tgbotapi.NewMessage(
 		message.Chat.ID,
-		"Perfekt 🎉, ich wede dich benachrichtigen sobald sich dein angebot bei Leaseplan geändert hat.\nSicherheitshalber habe ich das Token aus unserem Verlauf gelöscht.\nDu kannst natürlich noch das Nachrichtenformat (/messageFormat) sowie eigene Filter (/filter) einstellen.")
+		"Perfekt 🎉, das hat schonmal geklappt 😊.\nSicherheitshalber habe ich das Token aus unserem Verlauf gelöscht.\n\nWenn du benachrichtigt werden willst sobald sich dein angebot bei Leaseplan geändert hat, aktiviere deine Updates mit /resume.\nDu kannst natürlich noch das Nachrichtenformat (/messageFormat) sowie eigene Filter (/filter) einstellen.")
 
 	return []tgbotapi.Chattable{deleteCredsMsg, msg}, nil
 }

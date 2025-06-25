@@ -312,7 +312,7 @@ func taxPrice(car dto.Item) float64 {
 
 func netCost(car dto.Item) float64 {
 	taxFactor := 0.42
-	return (taxPrice(car) * taxFactor) + (car.SalaryWaiver * (1 - taxFactor))
+	return (taxPrice(car) * taxFactor) + (float64(car.SalaryWaiver) * (1 - taxFactor))
 }
 
 func italic(text string) string {

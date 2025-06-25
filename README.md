@@ -30,7 +30,7 @@ Command                                             | Short description
 [setsummarymessageformat](#setsummarymessageformat) | updates personal summary message format
 [setdetailmessageformat](#setdetailmessageformat)   | updates personal detail message format
 [test](#test)                                       | returns a test message
-[~~filter~~](#filter)                               | ~~sets a filter for your update message~~
+[filter](#filter)                                   | sets a filter for your update message
 
 ### start
 

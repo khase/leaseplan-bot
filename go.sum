@@ -200,6 +200,8 @@ github.com/khase/leaseplanabocarexporter v1.1.2-0.20230822193137-06006925da05 h1
 github.com/khase/leaseplanabocarexporter v1.1.2-0.20230822193137-06006925da05/go.mod h1:Tzr5TgAKqQqYW+lr3dUOdiipis3RBV9OKXdXKi3heWA=
 github.com/khase/leaseplanabocarexporter v1.2.0 h1:NbERNF/N824RVvIHD+1Bax3nDkOoNlJI6D4mSUl6H8A=
 github.com/khase/leaseplanabocarexporter v1.2.0/go.mod h1:Tzr5TgAKqQqYW+lr3dUOdiipis3RBV9OKXdXKi3heWA=
+github.com/khase/leaseplanabocarexporter v1.3.1 h1:+lZc1ARfUflyTbwBCVakr9XlInoRfzWnpJewzMbv80A=
+github.com/khase/leaseplanabocarexporter v1.3.1/go.mod h1:Tzr5TgAKqQqYW+lr3dUOdiipis3RBV9OKXdXKi3heWA=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=

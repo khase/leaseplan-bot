@@ -204,6 +204,8 @@ github.com/khase/leaseplanabocarexporter v1.3.1 h1:+lZc1ARfUflyTbwBCVakr9XlInoRf
 github.com/khase/leaseplanabocarexporter v1.3.1/go.mod h1:Tzr5TgAKqQqYW+lr3dUOdiipis3RBV9OKXdXKi3heWA=
 github.com/khase/leaseplanabocarexporter v1.3.2 h1:3b9jegrokeAAF9tR/d8ct0kC2gFPyiTPvSZviBBkXLU=
 github.com/khase/leaseplanabocarexporter v1.3.2/go.mod h1:Tzr5TgAKqQqYW+lr3dUOdiipis3RBV9OKXdXKi3heWA=
+github.com/khase/leaseplanabocarexporter v1.3.3 h1:Ht1zKW4n3pDBWxCdSQ5DH6W8zAswLDduP7ffpzwnbbE=
+github.com/khase/leaseplanabocarexporter v1.3.3/go.mod h1:Tzr5TgAKqQqYW+lr3dUOdiipis3RBV9OKXdXKi3heWA=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=

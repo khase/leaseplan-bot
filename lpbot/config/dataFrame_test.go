@@ -31,7 +31,7 @@ func TestMessage(t *testing.T) {
 	messages, err := frame.GetMessages(&config.User{
 		UserId:                 123,
 		SummaryMessageTemplate: "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})",
-		DetailMessageTemplate:  "[{{ .OfferTypeName }}](https://www.leaseplan-abocar.de/offer-details/{{ .Ident }}/{{ .RentalObject.Ident }}) {{ .RentalObject.PowerHp }}PS ({{ .RentalObject.PriceProducer1 }}€)",
+		DetailMessageTemplate:  "[{{ .OfferTypeName }}](https://www.leaseplan-abocar.de/offer-details/{{ .Ident }}/{{ .RentalObject.Ident }}) {{ .RentalObject.PowerHP }}PS ({{ .RentalObject.PriceProducer1 }}€)",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -53,7 +53,7 @@ func TestTestMessage(t *testing.T) {
 	messages, err := frame.GetTestMessages(&config.User{
 		UserId:                 123,
 		SummaryMessageTemplate: "{{ len .Previous }} -> {{ len .Current }} (+{{ len .Added }}, -{{ len .Removed }})",
-		DetailMessageTemplate:  "[{{ .OfferTypeName }}](https://www.leaseplan-abocar.de/offer-details/{{ .Ident }}/{{ .RentalObject.Ident }}) {{ .RentalObject.PowerHp }}PS ({{ .RentalObject.PriceProducer1 }}€)",
+		DetailMessageTemplate:  "[{{ .OfferTypeName }}](https://www.leaseplan-abocar.de/offer-details/{{ .Ident }}/{{ .RentalObject.Ident }}) {{ .RentalObject.PowerHP }}PS ({{ .RentalObject.PriceProducer1 }}€)",
 	}, 2)
 	if err != nil {
 		t.Fatal(err)

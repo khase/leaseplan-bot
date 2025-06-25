@@ -157,7 +157,7 @@ Example (current default message formats can be found in the [user struct](lpbot
 
 ```template
 {{ portalUrl . }}
-  PS: {{ .RentalObject.PowerHp }}, Antrieb: {{ .RentalObject.KindOfFuel }}
+  PS: {{ .RentalObject.PowerHP }}, Antrieb: {{ .RentalObject.KindOfFuel }}
   BLP: {{ .RentalObject.PriceProducer1 }}€, BGV: {{.SalaryWaiver}}€, Netto: ~{{ round ( netCost . ) 2 }}€
   Verfügbar: {{.RentalObject.DateRegistration.Format \"02.01.2006\"}}
 ```
@@ -246,12 +246,12 @@ To add this filter simply use the following command:
 
 ##### Add Filter to ignore all cars with less than 300 HP
 ```filter
-gt .RentalObject.PowerHp 300
+gt .RentalObject.PowerHP 300
 ```
 
 To add this filter simply use the following command:
 ```
-/filter add gt .RentalObject.PowerHp 300
+/filter add gt .RentalObject.PowerHP 300
 ```
 
 ##### Remove Filter to ignore all cars from VOLVO

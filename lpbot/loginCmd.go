@@ -5,6 +5,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/khase/leaseplan-bot/lpbot/config"
+	"github.com/khase/leaseplan-bot/lpbot/lpcon"
 	"github.com/khase/leaseplan-bot/lpbot/tgcon"
 	"github.com/khase/leaseplanabocarexporter/pkg"
 )
@@ -85,14 +86,16 @@ func handleSetTokenCommand(message *tgbotapi.Message, user *config.User) ([]tgbo
 
 func setToken(token string, message *tgbotapi.Message, user *config.User) ([]tgbotapi.Chattable, error) {
 	user.LeaseplanToken = token
+	user.StartWatcher()
 	user.Save()
+	lpcon.RegisterUserWatcher(user)
 
 	deleteCredsMsg := tgbotapi.NewDeleteMessage(
 		message.Chat.ID,
 		message.MessageID)
 	msg := tgbotapi.NewMessage(
 		message.Chat.ID,
-		"Perfekt 🎉, das hat schonmal geklappt 😊.\nSicherheitshalber habe ich das Token aus unserem Verlauf gelöscht.\n\nWenn du benachrichtigt werden willst sobald sich dein angebot bei Leaseplan geändert hat, aktiviere deine Updates mit /resume.\nDu kannst natürlich noch das Nachrichtenformat (/messageFormat) sowie eigene Filter (/filter) einstellen.")
+		"Perfekt 🎉, das hat schonmal geklappt 😊.\nSicherheitshalber habe ich das Token aus unserem Verlauf gelöscht.\n\nDeine Updates wurden automatisch aktiviert ✅. Du kannst natürlich noch das Nachrichtenformat (/messageFormat) sowie eigene Filter (/filter) einstellen.")
 
 	return []tgbotapi.Chattable{deleteCredsMsg, msg}, nil
 }

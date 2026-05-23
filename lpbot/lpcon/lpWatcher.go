@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -302,6 +303,12 @@ func updateUserInfo(user *config.User) error {
 		user.WatcherError = err.Error()
 		user.WatcherActive = false
 		user.Save()
+
+		if strings.Contains(err.Error(), "401") || strings.Contains(err.Error(), "403") || strings.Contains(err.Error(), "Unauthorized") {
+			msg := tgbotapi.NewMessage(user.UserId, "⚠️ Dein Leaseplan Token ist abgelaufen oder ungültig. Bitte logge dich neu ein (/login), um weiterhin Benachrichtigungen zu erhalten.")
+			tgBot.Send(msg)
+		}
+
 		return err
 	}
 	user.LeaseplanLevelKey = lpUserInfo.AddressRole.RoleName
